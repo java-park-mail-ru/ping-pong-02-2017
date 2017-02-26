@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -22,7 +23,7 @@ public class UserController {
      */
 
     @RequestMapping(path = "/api/user/registration", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String register(@RequestBody UserProfile body, HttpSession httpSession) {
+    public String register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse responseCode) {
         JSONObject response = new JSONObject();
         JSONArray jsonArray = new JSONArray();
 
@@ -38,7 +39,12 @@ public class UserController {
             jsonArray.put(getEmptyFieldError("login"));
         }
 
+        if(body == null) {
+            jsonArray.put("empty body");
+        }
+
         if (jsonArray.length() > 0) {
+            responseCode.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.put("errors", jsonArray);
             return response.toString();
         }
@@ -54,7 +60,7 @@ public class UserController {
     }
 
     @RequestMapping(path = "/api/user/login", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String login(@RequestBody UserProfile body, HttpSession httpSession) {
+    public String login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse responseCode) {
         JSONObject response = new JSONObject();
         JSONArray jsonArray = new JSONArray();
 
@@ -67,6 +73,7 @@ public class UserController {
         }
 
         if (jsonArray.length() > 0) {
+            responseCode.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.put("error", jsonArray);
             return response.toString();
         }
@@ -80,26 +87,33 @@ public class UserController {
     }
 
     @RequestMapping(path = "/api/user/logout", method = RequestMethod.POST, consumes = "application/json")
-    public String logout(HttpSession httpSession) {
+    public String logout(HttpSession httpSession, HttpServletResponse responseCode) {
         JSONObject response = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
             response.put("status", "success");
             httpSession.invalidate();
         } else {
+            responseCode.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.put("error", "user didn\'t login");
         }
         return response.toString();
     }
 
     @RequestMapping(path = "/api/user/getuser", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public UserProfile getUser(HttpSession httpSession) {
-        String email = httpSession.getAttribute("email").toString();
-        UserProfile userProfile = accountService.getUser(email);
-        return userProfile;
+    public String getUser(HttpSession httpSession , HttpServletResponse responseCode) {
+        JSONObject response = new JSONObject();
+        if(httpSession.getAttribute("email") != null) {
+            UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
+            response = userProfileToJSON(userProfile);
+        } else {
+            responseCode.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.put("error", "user didn\'t login");
+        }
+        return response.toString();
     }
 
     @RequestMapping(path = "/api/user/update", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession) {
+    public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse responseCode) {
         JSONObject response = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
             if(!isEmptyField(changedUserProfile.getEmail()) || !isEmptyField(changedUserProfile.getPassword()) ||
@@ -114,9 +128,11 @@ public class UserController {
                 response = userProfileToJSON(userProfile);
                 return response.toString();
             } else {
+                responseCode.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.put("error", "data to update is empty");
             }
         } else {
+            responseCode.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.put("error", "user didn't login");
         }
         return response.toString();
