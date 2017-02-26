@@ -25,16 +25,17 @@ public class UserController {
     public String register(@RequestBody UserProfile body, HttpSession httpSession) {
         JSONObject response = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        if ((body.getEmail() == null) ||  body.getEmail().isEmpty()) {
-            jsonArray.put("field email is empty");
+
+        if(isEmptyField(body.getEmail())) {
+            jsonArray.put(getEmptyFieldError("email"));
         }
 
-        if ((body.getPassword() == null) ||  body.getPassword().isEmpty()) {
-            jsonArray.put("field password is empty");
+        if(isEmptyField(body.getPassword())) {
+            jsonArray.put(getEmptyFieldError("password"));
         }
 
-        if ((body.getLogin() == null) ||  body.getLogin().isEmpty()) {
-            jsonArray.put("field login is empty");
+        if(isEmptyField(body.getLogin())) {
+            jsonArray.put(getEmptyFieldError("login"));
         }
 
         if (jsonArray.length() > 0) {
@@ -56,12 +57,13 @@ public class UserController {
     public String login(@RequestBody UserProfile body, HttpSession httpSession) {
         JSONObject response = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        if ((body.getEmail() == null) || body.getEmail().isEmpty()) {
-            jsonArray.put("Field email is empty");
+
+        if(isEmptyField(body.getEmail())) {
+            jsonArray.put(getEmptyFieldError("email"));
         }
 
-        if ((body.getPassword() == null) || body.getPassword().isEmpty()) {
-            jsonArray.put("Field password is empty");
+        if(isEmptyField(body.getPassword())) {
+            jsonArray.put(getEmptyFieldError("password"));
         }
 
         if (jsonArray.length() > 0) {
@@ -73,7 +75,7 @@ public class UserController {
             httpSession.setAttribute("email", body.getEmail());
             response.put("status", "success");
         }
-        else response.put("error", "invalidate email or password");
+        else response.put("error", "invalid email or password");
         return response.toString();
     }
 
@@ -93,23 +95,26 @@ public class UserController {
     public UserProfile getUser(HttpSession httpSession) {
         String email = httpSession.getAttribute("email").toString();
         UserProfile userProfile = accountService.getUser(email);
-        if(userProfile != null) {
-            return userProfile;
-        }
-        return null;
+        return userProfile;
     }
 
     @RequestMapping(path = "/api/user/update", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String updateUser(@RequestBody UserProfile changedUser, HttpSession httpSession) {
+    public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession) {
         JSONObject response = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
-            if(changedUser.getEmail() != null && changedUser.getLogin() != null && changedUser.getPassword() != null) {
-                UserProfile userProfile = accountService.update(httpSession.getAttribute("email").toString(), changedUser);
+            if(!isEmptyField(changedUserProfile.getEmail()) || !isEmptyField(changedUserProfile.getPassword()) ||
+                    !isEmptyField(changedUserProfile.getLogin())) {
+                UserProfile oldUserProfile = accountService.getUser(httpSession.getAttribute("email").toString());
+                UserProfile userProfile = accountService.update(oldUserProfile, changedUserProfile);
+                if (userProfile == null) {
+                    response.put("error", "this email is occupied");
+                    return response.toString();
+                }
                 httpSession.setAttribute("email", userProfile.getEmail());
                 response = userProfileToJSON(userProfile);
                 return response.toString();
             } else {
-                response.put("error", "there is no data to update");
+                response.put("error", "data to update is empty");
             }
         } else {
             response.put("error", "user didn't login");
@@ -125,6 +130,14 @@ public class UserController {
         userProfileJSON.put("login", userProfile.getLogin());
         userProfileJSON.put("email", userProfile.getEmail());
         return userProfileJSON;
+    }
+
+    private boolean isEmptyField(String field) {
+        return ((field == null) || field.isEmpty());
+    }
+
+    private String getEmptyFieldError(String fieldName) {
+        return ("field " + fieldName + " is empty");
     }
 
     public UserController(@NotNull AccountService accountService) {
