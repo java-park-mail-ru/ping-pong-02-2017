@@ -1,0 +1,18 @@
+dist: trusty
+sudo: required
+
+language: java
+
+branches:
+  only:
+    - develop
+  # - Your branch name
+
+deploy:
+  provider: heroku
+  app:
+    develop: polyhedron-backend
+
+  api_key:
+    develop:
+      secure: oQ/eCQzGGrZnz9wK+2omXj8RBa2Z70ms5SSYt0KHQJl3+MFOk28WlQZTBT/RTnX9yiZxdnRrmCA6CRIVg9qN4ZYRi248Fb1z/TjH+6f/TaLQI0gTT5/loEDBmZzXrGLq/s/Zk846uYCFpNIICrsHBsmeFgUU/NbXF5R2LgjT2fpv3Dnfcgy1qyplV6Eg8v8d+jb3Ilk+VqRRu8fVbRIs5LqWu/bDmV2TM2MaKI6N9oMPwaEoDSEgPHVfI/zrsnMW8NJ+Q/fUoIUDdcAVD3BHACTIHjQoWwxMNr3ozGNdZyaIYudPW78U2Uz678THDO7oDRnFHC6XkaEeutrApQyQccTJHxp0QZZmdrWyJ1jdpvTPJeXgQPsEYNch4AF9RLk1n2Zz/5KOh3bLy0L+uYm79Cvzu6RXuyKWhGfRYQJ5wjvcrMEcA8EpsksHNToqHbnRzWOVun6R2g6nFL3k/s7eZqtYj4AaDaxx9A30bCnQI0FL4Iwzpw4jKAhLphlp8QWIttFcYRqPKK2hcXimZrlvssCD3gfGlZolPKRkmxvmV2wbc8ISnm/bOlqqMH/by0/386d7spH60dZjnsXuklOIoM1iLusBm/fAZH88ZRE/Stv0U622C+km8IpUGGEN6abwYIjh0B24CNxPyFls0aSs/oXGmb4SHWoywDxmvj91sEs=
