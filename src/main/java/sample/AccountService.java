@@ -40,34 +40,36 @@ public class AccountService {
     }
 
     @Nullable
-    public UserProfile update(@NotNull String email, @NotNull UserProfile changedProfile) {
-        if(isOccupied(email) && (changedProfile.getEmail().equals(email) || !isOccupied(changedProfile.getEmail()))) {
-            UserProfile userProfile = new UserProfile(userNameToUserProfile.get(email));
-            userNameToUserProfile.remove(email);
-            //if(changedProfile.login != null || changedProfile.email != null || changedProfile.password != null) {
-            userProfile = getNewProfile(userProfile, changedProfile);
-            userNameToUserProfile.put(userProfile.getEmail(),userProfile);
-            return userProfile;
+    public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
+        if(!isEmptyField(changedProfile.getEmail())) {
+            if (!changedProfile.getEmail().equals(userProfile.getEmail()) && isOccupied(changedProfile.getEmail())) {
+                return null;
+            }
         }
-
-        return null;
+        userNameToUserProfile.remove(userProfile.getEmail());
+        updateNotNullFields(userProfile, changedProfile);
+        userNameToUserProfile.put(userProfile.getEmail(), userProfile);
+        return userProfile;
     }
 
     private boolean isOccupied(String key) {
         return userNameToUserProfile.containsKey(key);
     }
 
-    private UserProfile getNewProfile(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
-        if(changedProfile.getLogin() != null) {
-            userProfile.setLogin(changedProfile.getLogin());
-        }
-        if(changedProfile.getEmail() != null) {
+    private boolean isEmptyField(String field) {
+        return (field == null) || field.isEmpty();
+    }
+
+    private void updateNotNullFields(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
+        if(!isEmptyField(changedProfile.getEmail())) {
             userProfile.setEmail(changedProfile.getEmail());
         }
-        if(changedProfile.getPassword() != null) {
+        if(!isEmptyField(changedProfile.getLogin())) {
+            userProfile.setLogin(changedProfile.getLogin());
+        }
+        if(!isEmptyField(changedProfile.getPassword())) {
             userProfile.setPassword(changedProfile.getPassword());
         }
-        return userProfile;
     }
 }
 
