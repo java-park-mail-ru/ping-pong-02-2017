@@ -48,6 +48,7 @@ public class UserController {
             httpSession.setAttribute("email", body.getEmail());
         } else {
             responseJSON.put("error", "this email is occupied");
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
         }
         return responseJSON.toString();
     }
@@ -75,7 +76,10 @@ public class UserController {
             httpSession.setAttribute("email", body.getEmail());
             responseJSON.put("status", "success");
         }
-        else responseJSON.put("error", "invalid email or password");
+        else {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            responseJSON.put("error", "invalid email or password");
+        }
         return responseJSON.toString();
     }
 
@@ -92,7 +96,7 @@ public class UserController {
         return responseJSON.toString();
     }
 
-    @RequestMapping(path = "/api/user/getuser", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(path = "/api/user/getuser", method = RequestMethod.GET, produces = "application/json", consumes = "application/json")
     public String getUser(HttpSession httpSession , HttpServletResponse response) {
         JSONObject responseJSON = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
@@ -116,6 +120,7 @@ public class UserController {
                 final UserProfile updatedUserProfile = accountService.update(oldUserProfile, changedUserProfile);
 
                 if (updatedUserProfile == null) {
+                    response.setStatus(HttpServletResponse.SC_CONFLICT);
                     responseJSON.put("error", "this email is occupied");
                     return responseJSON.toString();
                 }

@@ -1,0 +1,146 @@
+
+swagger: '2.0'
+
+info:
+  version: "0.0.0"
+  title: polygon-pong
+  
+basePath: /api
+consumes:
+- application/json
+produces:
+- application/json
+
+
+paths:
+  /api/user/registration:
+    post:
+      description: |
+        Регистрация одного пользователя
+      parameters:
+        - name: userProfile
+          in: body
+          description: Данные пользователя
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfile'
+          
+      responses:
+        200:
+          description: Успешное создание
+          schema:
+            $ref: '#/definitions/UserProfile'
+            
+        400:
+          description: Недостаточно данных. Возвращает массив сообщений об ошибках
+        409:
+          description: Email занят. Возвращает сообщение об ошибке
+          
+  /api/user/login:
+    post:
+      description: |
+        Авторизация пользователя
+      parameters:
+        - name: userProfile
+          in: body
+          description: |
+            Данные пользователя. При авторизации используется только email и
+            пароль. Login может быть пустым.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfile'
+          
+      responses:
+        200:
+          description: |
+            Успешная авторизация. Возвращает сообщение об успешной авторизации
+        400:
+          description: |
+            Недостаточно данных. Возвращает массив сообщений об ошибках
+        403:
+          description: |
+            Авторизация не удалась. Возвращает сообщение об ошибке
+            
+  /api/user/logout:
+    post:
+      description: |
+        Выйти из своего аккаунта
+      responses:
+        200:
+          description: |
+            Выход прошел успешно
+        403:
+          description: |
+            Пользователь не был залогинен
+        
+  /api/user/getuser:
+    get:
+      description: |
+        Информация о текущем пользователе, если он авторизован.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserProfile'
+        403:
+          description: Пользователь не авторизован. Возвращает сообщение об ошибке
+          
+  /api/user/update:
+    post:
+      description: Обновить информацию о пользователе
+      parameters:
+        - name: userProfile
+          in: body
+          description: Новые данные пользователя. Обновляются только непустые поля
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfile'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserProfile'
+        400:
+          description: Недостаточно данных. Возвращает массив сообщений об ошибке.
+        403:
+          description: Пользователь не авторизован. Возвращает сообщение об ошибке.
+        409:
+          description: Новый Email занят. Возвращает сообщение об ошибке.
+        
+          
+    
+    
+        
+definitions:
+  
+  UserProfile:
+    type: object
+    properties:
+      email:
+        type: string
+        format: identity
+        readOnly: false
+        description: |
+          Уникальный email пользователя
+        example: some@gmail.com
+      login:
+        type: string
+        format: identity
+        readOnly: false
+        description: |
+          Уникальный идентификатор пользователя
+        example: someLogin
+      password: 
+        type: string
+        format: identity
+        readOnly: false
+        description: | 
+          Пароль пользователя
+        example: somePassword
+        
+        
+    
+
+
+                  
+                  

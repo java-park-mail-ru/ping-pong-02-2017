@@ -11,4 +11,6 @@
 ###3. Ваняшкин Юрий
 ###4. Лукьянова Ирина
 
-# Описание REST-API:
+### Описание API в swagger.yml.
+### Backend находится по адресу http://polyhedron-backend.herokuapp.com
+### Frontend находится по адресу https://polyhedron-team.herokuapp.com
