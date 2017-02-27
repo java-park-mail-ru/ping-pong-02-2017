@@ -18,7 +18,7 @@ public class AccountService {
 
     @Nullable
     public UserProfile register(@NotNull String email, @NotNull String login, @NotNull String password) {
-        UserProfile userProfile = new UserProfile(email, login, password);
+        final UserProfile userProfile = new UserProfile(email, login, password);
         if(!isOccupied(email)) {
             userProfile.setId();
             userNameToUserProfile.put(email, userProfile);
@@ -29,10 +29,7 @@ public class AccountService {
 
 
     public boolean login(@NotNull String email, @NotNull String password) {
-        if (isOccupied(email)) {
-            return userNameToUserProfile.get(email).getPassword().equals(password);
-        }
-        return false;
+        return isOccupied(email) && userNameToUserProfile.get(email).getPassword().equals(password);
     }
 
     public UserProfile getUser(@NotNull String email) {

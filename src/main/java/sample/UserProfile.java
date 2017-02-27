@@ -15,9 +15,9 @@ public class UserProfile {
     private long id;
 
     public UserProfile(UserProfile userProfile) {
-        this.email = userProfile.getEmail();
-        this.login = userProfile.getLogin();
-        this.password = userProfile.getPassword();
+        this.email = userProfile.email;
+        this.login = userProfile.login;
+        this.password = userProfile.password;
         this.id = userProfile.getId();
     }
 

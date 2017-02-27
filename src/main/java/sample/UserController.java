@@ -12,135 +12,131 @@ import javax.servlet.http.HttpSession;
 /**
  * Created by sergey on 24.02.17.
  */
+
+@CrossOrigin    //Enables CORS from all origins
 @RestController
 public class UserController {
     @NotNull
     private final AccountService accountService;
-    /**
-     * Данный метод вызывается с помощью reflection'a, поэтому Spring позволяет инжектить в него аргументы.
-     * Подробнее можно почитать в сорцах к аннотации {@link RequestMapping}. Там описано как заинжектить различные атрибуты http-запроса.
-     * Возвращаемое значение можно так же варьировать. Н.п. Если отдать InputStream, можно стримить музыку или видео
-     */
 
     @RequestMapping(path = "/api/user/registration", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse responseCode) {
-        JSONObject response = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
+    public String register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
+        JSONObject responseJSON = new JSONObject();
+        final JSONArray errorList = new JSONArray();
 
         if(isEmptyField(body.getEmail())) {
-            jsonArray.put(getEmptyFieldError("email"));
+            errorList.put(getEmptyFieldError("email"));
         }
 
         if(isEmptyField(body.getPassword())) {
-            jsonArray.put(getEmptyFieldError("password"));
+            errorList.put(getEmptyFieldError("password"));
         }
 
         if(isEmptyField(body.getLogin())) {
-            jsonArray.put(getEmptyFieldError("login"));
+            errorList.put(getEmptyFieldError("login"));
         }
 
-        if(body == null) {
-            jsonArray.put("empty body");
+        if (errorList.length() > 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            responseJSON.put("errors", errorList);
+            return responseJSON.toString();
         }
 
-        if (jsonArray.length() > 0) {
-            responseCode.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.put("errors", jsonArray);
-            return response.toString();
-        }
-
-        UserProfile userProfile = accountService.register(body.getEmail(), body.getLogin(), body.getPassword());
+        final UserProfile userProfile = accountService.register(body.getEmail(), body.getLogin(), body.getPassword());
         if(userProfile != null) {
-            response = userProfileToJSON(userProfile);
+            responseJSON = userProfileToJSON(userProfile);
             httpSession.setAttribute("email", body.getEmail());
         } else {
-            response.put("error", "this email is occupied");
+            responseJSON.put("error", "this email is occupied");
         }
-        return response.toString();
+        return responseJSON.toString();
     }
 
     @RequestMapping(path = "/api/user/login", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse responseCode) {
-        JSONObject response = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
+    public String login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
+        final JSONObject responseJSON = new JSONObject();
+        final JSONArray errorList = new JSONArray();
 
         if(isEmptyField(body.getEmail())) {
-            jsonArray.put(getEmptyFieldError("email"));
+            errorList.put(getEmptyFieldError("email"));
         }
 
         if(isEmptyField(body.getPassword())) {
-            jsonArray.put(getEmptyFieldError("password"));
+            errorList.put(getEmptyFieldError("password"));
         }
 
-        if (jsonArray.length() > 0) {
-            responseCode.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.put("error", jsonArray);
-            return response.toString();
+        if (errorList.length() > 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            responseJSON.put("error", errorList);
+            return responseJSON.toString();
         }
 
         if(accountService.login(body.getEmail(), body.getPassword())) {
             httpSession.setAttribute("email", body.getEmail());
-            response.put("status", "success");
+            responseJSON.put("status", "success");
         }
-        else response.put("error", "invalid email or password");
-        return response.toString();
+        else responseJSON.put("error", "invalid email or password");
+        return responseJSON.toString();
     }
 
     @RequestMapping(path = "/api/user/logout", method = RequestMethod.POST, consumes = "application/json")
-    public String logout(HttpSession httpSession, HttpServletResponse responseCode) {
-        JSONObject response = new JSONObject();
+    public String logout(HttpSession httpSession, HttpServletResponse response) {
+        final JSONObject responseJSON = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
-            response.put("status", "success");
+            responseJSON.put("status", "success");
             httpSession.invalidate();
         } else {
-            responseCode.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.put("error", "user didn\'t login");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            responseJSON.put("error", "user didn\'t login");
         }
-        return response.toString();
+        return responseJSON.toString();
     }
 
     @RequestMapping(path = "/api/user/getuser", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String getUser(HttpSession httpSession , HttpServletResponse responseCode) {
-        JSONObject response = new JSONObject();
+    public String getUser(HttpSession httpSession , HttpServletResponse response) {
+        JSONObject responseJSON = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
-            UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
-            response = userProfileToJSON(userProfile);
+            final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
+            responseJSON = userProfileToJSON(userProfile);
         } else {
-            responseCode.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.put("error", "user didn\'t login");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            responseJSON.put("error", "user didn\'t login");
         }
-        return response.toString();
+        return responseJSON.toString();
     }
 
     @RequestMapping(path = "/api/user/update", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse responseCode) {
-        JSONObject response = new JSONObject();
+    public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
+        JSONObject responseJSON = new JSONObject();
+
         if(httpSession.getAttribute("email") != null) {
-            if(!isEmptyField(changedUserProfile.getEmail()) || !isEmptyField(changedUserProfile.getPassword()) ||
+            if(!isEmptyField(changedUserProfile.getEmail()) && !isEmptyField(changedUserProfile.getPassword()) &&
                     !isEmptyField(changedUserProfile.getLogin())) {
-                UserProfile oldUserProfile = accountService.getUser(httpSession.getAttribute("email").toString());
-                UserProfile userProfile = accountService.update(oldUserProfile, changedUserProfile);
-                if (userProfile == null) {
-                    response.put("error", "this email is occupied");
-                    return response.toString();
+                final UserProfile oldUserProfile = accountService.getUser(httpSession.getAttribute("email").toString());
+                final UserProfile updatedUserProfile = accountService.update(oldUserProfile, changedUserProfile);
+
+                if (updatedUserProfile == null) {
+                    responseJSON.put("error", "this email is occupied");
+                    return responseJSON.toString();
                 }
-                httpSession.setAttribute("email", userProfile.getEmail());
-                response = userProfileToJSON(userProfile);
-                return response.toString();
+
+                httpSession.setAttribute("email", updatedUserProfile.getEmail());
+                responseJSON = userProfileToJSON(updatedUserProfile);
+                return responseJSON.toString();
             } else {
-                responseCode.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.put("error", "data to update is empty");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                responseJSON.put("error", "data to update is empty");
             }
         } else {
-            responseCode.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.put("error", "user didn't login");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            responseJSON.put("error", "user didn't login");
         }
-        return response.toString();
+        return responseJSON.toString();
     }
 
 
     public JSONObject userProfileToJSON (UserProfile userProfile) {
-        JSONObject userProfileJSON = new JSONObject();
+        final JSONObject userProfileJSON = new JSONObject();
         //userProfileJSON.put("password", userProfile.getPassword());
         userProfileJSON.put("id", userProfile.getId());
         userProfileJSON.put("login", userProfile.getLogin());
