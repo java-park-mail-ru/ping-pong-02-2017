@@ -1,21 +1,15 @@
 dist: trusty
 sudo: required
-
 language: java
 jdk:
 - oraclejdk7
 - openjdk6
-
 branches:
   only:
-    - develop
-  # - Your branch name
-
+  - develop
 deploy:
   provider: heroku
   app:
     develop: polyhedron-backend
-
   api_key:
-    develop:
-      secure: AUyb87Ssi/qYRegWV5ALIzETZLzZWMyorqdUs7xMPQMEcJEGHFEvN2jO2gQo4KpZ9EP0y35U2z4Yqw8TiGF86ftUuz6+M1WhyDM/8xWhqy3YPEN0GNWnWhyONGkK5ByC+EBJz5VucFV5U6DfsHO9LvRsyUtHThrJyubTyNWPChz6nSWHWC8iMoaz1U+LeIzcMIOPtRCN2T5ZnfU5N5xe+8wWAWRZqWrVRGSqO85U0ntHrr6wqWVZo8+oIH8Abvs7FN0ByAWYZmB1fHE5c6tra2lr7/m0u6VVfw3OO8YozDc10ytiz8qNGDGOxChhFNtob0ZXhGUIp/9KJaYnOkA1wB1RRxCbZS25+V3VG2sjvWQxBtlSEmb+vmugBq9+IvtQsSH0voiK62Q66naMEd5PHoGubyg/td7eccT5VgSBrEpEWEvPwAqqUsExCgDWmXkqd8h8CO3j1BdGgBB3JzH7/lfTza3h7ueaFzPUqCZJswEJdtpJPcGZv19duW5F6+obsBnRs2Vc/EtMG6zd/+yRmRvcuuXglSak5rKdKL0IqC2PLT8390m+QA0YfyGiH8yGDi5Iv9cIKyd0uQS8wOVeCmfgYbKMIB0Fn5M9q70dVbPORgMoxtkWmq3ode0ct6DWRiGcOKNucALlh9OgkUsr7gej4IRTR00EOOBKSuUHFko=
+    secure: X2C3aYWPy3evdc+dr5h/pf0Fv3IIzBw4KQF2+uSNFaf0KGg8Ss1IdiJGOQrKW/GxObsPcV9QJAz9UN3b0Bq4ZTNEmmwXq/9yn/3wSp3WTwyy5qJlX2nIV+toTq3bZBTPJ2nwwtioHeuArqUnjESw5u0S/lnYFaxw77+Z+6ms+s3KHzY+rG5wdrcIASqNZt0ePpdnnjQA1LseeVklBc4RrNAH6I51qGwJ0BUv/waT0kAw5JPkVdc1POWZGC+vre8D21fggKM0n3B7pCuSyQAmudQSYbrIprW/zit14sFZc3/1hH+BbgBDdexSQ8EOn6albSdTvWnkuAo2iFyyGW7fp/3q/v5X9Y7+YoHlemu5Q72aY2ZzzcqYfOpwIoJ3SI6aZfSKXfQZOfGqK/YNKRlGDkCyH6IDYIF0pam0OlBzHCLh1BSPsFTK+oD30vUkELm3ohiCiYHkowD3A8V1zfoUPf2CWroSUaLqOewM4NJnMjsY5UCa1ycWgrdDdeGF4vU0KkhFHDBMgb/NVIaUUOQppb0y0l3jb2vKT46wrYSrmPJ7sEQY0qi2vAnsm4gkYYOgBsChg2YgxXC0OsHkEBa3oCb7PLBkcBVP91v1gVxRBt6G5VQWDjcXUVJpy6JExcyoy8jUIq6KE2+n7oeB+oLMUSe4K+UHGC+s4w1yXlNI5sk=
