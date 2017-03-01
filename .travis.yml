@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - oraclejdk8  
+  - oraclejdk8
 branches:       # Branches of repository that are deployed to heroku
   only:
   - develop     # Currently deploying only develop branch
