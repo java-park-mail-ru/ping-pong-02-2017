@@ -14,3 +14,4 @@
 ### Описание API в swagger.yml.
 ### Backend находится по адресу http://polyhedron-backend.herokuapp.com
 ### Frontend находится по адресу https://polyhedron-team.herokuapp.com
+### Travis находится по адресу https://travis-ci.org/KrylovS/ping-pong-02-2017

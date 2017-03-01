@@ -1,15 +1,11 @@
-dist: trusty
-sudo: required
 language: java
-jdk:
-- oraclejdk7
-- openjdk6
-branches:
+branches:       # Branches of repository that are deployed to heroku
   only:
-  - develop
+  - develop     # Currently deploying only develop branch
 deploy:
   provider: heroku
   app:
-    develop: polyhedron-backend
+    develop: polyhedron-backend   # Maps repository branch name to heroku application name
   api_key:
+    # Below - secure code to authorize on heroku
     secure: X2C3aYWPy3evdc+dr5h/pf0Fv3IIzBw4KQF2+uSNFaf0KGg8Ss1IdiJGOQrKW/GxObsPcV9QJAz9UN3b0Bq4ZTNEmmwXq/9yn/3wSp3WTwyy5qJlX2nIV+toTq3bZBTPJ2nwwtioHeuArqUnjESw5u0S/lnYFaxw77+Z+6ms+s3KHzY+rG5wdrcIASqNZt0ePpdnnjQA1LseeVklBc4RrNAH6I51qGwJ0BUv/waT0kAw5JPkVdc1POWZGC+vre8D21fggKM0n3B7pCuSyQAmudQSYbrIprW/zit14sFZc3/1hH+BbgBDdexSQ8EOn6albSdTvWnkuAo2iFyyGW7fp/3q/v5X9Y7+YoHlemu5Q72aY2ZzzcqYfOpwIoJ3SI6aZfSKXfQZOfGqK/YNKRlGDkCyH6IDYIF0pam0OlBzHCLh1BSPsFTK+oD30vUkELm3ohiCiYHkowD3A8V1zfoUPf2CWroSUaLqOewM4NJnMjsY5UCa1ycWgrdDdeGF4vU0KkhFHDBMgb/NVIaUUOQppb0y0l3jb2vKT46wrYSrmPJ7sEQY0qi2vAnsm4gkYYOgBsChg2YgxXC0OsHkEBa3oCb7PLBkcBVP91v1gVxRBt6G5VQWDjcXUVJpy6JExcyoy8jUIq6KE2+n7oeB+oLMUSe4K+UHGC+s4w1yXlNI5sk=
