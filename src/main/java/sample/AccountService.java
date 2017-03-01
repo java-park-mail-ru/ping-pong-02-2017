@@ -13,15 +13,14 @@ import java.util.Map;
 
 @Service
 public class AccountService {
-    private Map<String, UserProfile> userNameToUserProfile = new HashMap<>();
-    /*userNameToUserProfile - хранилище пользователей, в качестве ключа используется email*/
+    private Map<String, UserProfile> userStorage = new HashMap<>();
 
     @Nullable
     public UserProfile register(@NotNull String email, @NotNull String login, @NotNull String password) {
         final UserProfile userProfile = new UserProfile(email, login, password);
         if(!isOccupied(email)) {
             userProfile.setId();
-            userNameToUserProfile.put(email, userProfile);
+            userStorage.put(email, userProfile);
             return userProfile;
         }
         return null;
@@ -29,11 +28,11 @@ public class AccountService {
 
 
     public boolean login(@NotNull String email, @NotNull String password) {
-        return isOccupied(email) && userNameToUserProfile.get(email).getPassword().equals(password);
+        return isOccupied(email) && userStorage.get(email).getPassword().equals(password);
     }
 
     public UserProfile getUser(@NotNull String email) {
-        return userNameToUserProfile.get(email);
+        return userStorage.get(email);
     }
 
     @Nullable
@@ -43,14 +42,14 @@ public class AccountService {
                 return null;
             }
         }
-        userNameToUserProfile.remove(userProfile.getEmail());
+        userStorage.remove(userProfile.getEmail());
         updateNotNullFields(userProfile, changedProfile);
-        userNameToUserProfile.put(userProfile.getEmail(), userProfile);
+        userStorage.put(userProfile.getEmail(), userProfile);
         return userProfile;
     }
 
     private boolean isOccupied(String key) {
-        return userNameToUserProfile.containsKey(key);
+        return userStorage.containsKey(key);
     }
 
     private boolean isEmptyField(String field) {

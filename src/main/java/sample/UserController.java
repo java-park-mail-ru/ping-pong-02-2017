@@ -19,7 +19,7 @@ public class UserController {
     @NotNull
     private final AccountService accountService;
 
-    @RequestMapping(path = "/api/user/registration", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @PostMapping(path = "/api/user/registration")
     public String register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
         JSONObject responseJSON = new JSONObject();
         final JSONArray errorList = new JSONArray();
@@ -53,7 +53,7 @@ public class UserController {
         return responseJSON.toString();
     }
 
-    @RequestMapping(path = "/api/user/login", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @PostMapping(path = "/api/user/login")
     public String login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
         final JSONObject responseJSON = new JSONObject();
         final JSONArray errorList = new JSONArray();
@@ -83,7 +83,7 @@ public class UserController {
         return responseJSON.toString();
     }
 
-    @RequestMapping(path = "/api/user/logout", method = RequestMethod.POST, consumes = "application/json")
+    @PostMapping(path = "/api/user/logout")
     public String logout(HttpSession httpSession, HttpServletResponse response) {
         final JSONObject responseJSON = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
@@ -96,7 +96,7 @@ public class UserController {
         return responseJSON.toString();
     }
 
-    @RequestMapping(path = "/api/user/getuser", method = RequestMethod.GET, produces = "application/json", consumes = "application/json")
+    @GetMapping(path = "/api/user/getuser")
     public String getUser(HttpSession httpSession , HttpServletResponse response) {
         JSONObject responseJSON = new JSONObject();
         if(httpSession.getAttribute("email") != null) {
@@ -109,7 +109,7 @@ public class UserController {
         return responseJSON.toString();
     }
 
-    @RequestMapping(path = "/api/user/update", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @PostMapping(path = "/api/user/update")
     public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
         JSONObject responseJSON = new JSONObject();
 
