@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 
 /**
  * Created by sergey on 24.02.17.
@@ -18,13 +20,13 @@ import javax.servlet.http.HttpSession;
 public class UserController {
     @NotNull
     private final AccountService accountService;
+    private final ObjectMapper mapper = new ObjectMapper();
+
 
     @PostMapping(path = "/api/user/registration")
-    public String register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
-        final ObjectMapper mapper = new ObjectMapper();
+    public ObjectNode register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
         ObjectNode responseJSON = mapper.createObjectNode();
         final ArrayNode errorList = mapper.createArrayNode();
-
         if(isEmptyField(body.getEmail())) {
             errorList.add(getEmptyFieldError("email"));
         }
@@ -40,7 +42,7 @@ public class UserController {
         if (errorList.size() > 0) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseJSON.set("errors", errorList);
-            return responseJSON.toString();
+            return responseJSON;
         }
 
         final UserProfile userProfile = accountService.register(body.getEmail(), body.getLogin(), body.getPassword());
@@ -51,12 +53,11 @@ public class UserController {
             responseJSON.put("error", "this email is occupied");
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         }
-        return responseJSON.toString();
+        return responseJSON;
     }
 
     @PostMapping(path = "/api/user/login")
-    public String login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
-        final ObjectMapper mapper = new ObjectMapper();
+    public ObjectNode login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
         final ObjectNode responseJSON = mapper.createObjectNode();
         final ArrayNode errorList = mapper.createArrayNode();
 
@@ -71,7 +72,7 @@ public class UserController {
         if (errorList.size() > 0) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseJSON.set("error", errorList);
-            return responseJSON.toString();
+            return responseJSON;
         }
 
         if(accountService.login(body.getEmail(), body.getPassword())) {
@@ -82,12 +83,11 @@ public class UserController {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseJSON.put("error", "invalid email or password");
         }
-        return responseJSON.toString();
+        return responseJSON;
     }
 
     @PostMapping(path = "/api/user/logout")
-    public String logout(HttpSession httpSession, HttpServletResponse response) {
-        final ObjectMapper mapper = new ObjectMapper();
+    public ObjectNode logout(HttpSession httpSession, HttpServletResponse response) {
         final ObjectNode responseJSON = mapper.createObjectNode();
         if(httpSession.getAttribute("email") != null) {
             responseJSON.put("status", "success");
@@ -96,12 +96,11 @@ public class UserController {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseJSON.put("error", "user didn\'t login");
         }
-        return responseJSON.toString();
+        return responseJSON;
     }
 
     @GetMapping(path = "/api/user/getuser")
-    public String getUser(HttpSession httpSession , HttpServletResponse response) {
-        final ObjectMapper mapper = new ObjectMapper();
+    public ObjectNode getUser(HttpSession httpSession , HttpServletResponse response) {
         ObjectNode responseJSON = mapper.createObjectNode();
         if(httpSession.getAttribute("email") != null) {
             final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
@@ -110,12 +109,12 @@ public class UserController {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseJSON.put("error", "user didn\'t login");
         }
-        return responseJSON.toString();
+        return responseJSON;
     }
 
+
     @PostMapping(path = "/api/user/update")
-    public String updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
-        final ObjectMapper mapper = new ObjectMapper();
+    public ObjectNode updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
         ObjectNode responseJSON = mapper.createObjectNode();
 
         if(httpSession.getAttribute("email") != null) {
@@ -127,12 +126,12 @@ public class UserController {
                 if (updatedUserProfile == null) {
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
                     responseJSON.put("error", "this email is occupied");
-                    return responseJSON.toString();
+                    return responseJSON;
                 }
 
                 httpSession.setAttribute("email", updatedUserProfile.getEmail());
-                responseJSON = userProfileToJSON(updatedUserProfile);
-                return responseJSON.toString();
+                responseJSON = userProfileToJSON(changedUserProfile);
+                return responseJSON;
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 responseJSON.put("error", "data to update is empty");
@@ -141,17 +140,72 @@ public class UserController {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseJSON.put("error", "user didn't login");
         }
-        return responseJSON.toString();
+        return responseJSON;
+    }
+
+
+    @PostMapping(path = "/api/user/score")
+    public ObjectNode setScore(@RequestBody ObjectNode score, HttpSession httpSession, HttpServletResponse response) {
+        final ObjectNode responseJSON = mapper.createObjectNode();
+        if(isEmptyField(score.get("score").toString())) {
+            responseJSON.put("error", getEmptyFieldError("score"));
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return responseJSON;
+        }
+        if(httpSession.getAttribute("email") != null) {
+            final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
+            userProfile.setScore(score.get("score").intValue());
+            accountService.updateScore(userProfile);
+            responseJSON.put("status", "success");
+        } else {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            responseJSON.put("error", "user didn\'t login");
+        }
+        return responseJSON;
+    }
+
+    @PostMapping(path = "/api/user/leaders")
+    public ObjectNode getLeaders(@RequestBody ObjectNode countJSON, HttpSession httpSession , HttpServletResponse response) {
+        final ObjectNode responseJSON = mapper.createObjectNode();
+        int usersCounter;
+        if(countJSON.get("count") == null) {
+            usersCounter = 1;
+        } else {
+            usersCounter = countJSON.get("count").intValue();
+        }
+        final ArrayNode leadersList = mapper.createArrayNode();
+        final ArrayList<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore();
+        for(int counter = 0; counter < userProfileArrayList.size() && counter < usersCounter; counter++) {
+            leadersList.add(userProfileToJSON(userProfileArrayList.get(counter)));
+        }
+        responseJSON.set("leaders",leadersList);
+        return responseJSON;
+    }
+
+    @GetMapping(path = "/api/user/islogin")
+    public ObjectNode isLogin(HttpSession httpSession, HttpServletResponse response) {
+        final ObjectNode responseJSON = mapper.createObjectNode();
+        if(httpSession.getAttribute("email") != null) {
+            responseJSON.put("isLoggedIn","true");
+        } else {
+            responseJSON.put("isLoggedIn","false");
+        }
+        return responseJSON;
+    }
+
+    @GetMapping(path = "/api/user/flush")
+    public void flush() {
+        accountService.flush();
     }
 
 
     public ObjectNode userProfileToJSON (UserProfile userProfile) {
-        final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode userProfileJSON = mapper.createObjectNode();
 
         userProfileJSON.put("id", userProfile.getId());
         userProfileJSON.put("login", userProfile.getLogin());
         userProfileJSON.put("email", userProfile.getEmail());
+        userProfileJSON.put("score", userProfile.getScore());
         return userProfileJSON;
     }
 
