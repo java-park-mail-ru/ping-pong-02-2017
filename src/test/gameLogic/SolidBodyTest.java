@@ -1,8 +1,5 @@
 package gameLogic;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -21,14 +21,14 @@ public class Ball extends SolidBody {
         return this.circle.getRadius();
     }
 
-    void bounce(double[] inputNormVec) {
-        final RealVector normVec = new ArrayRealVector(inputNormVec);
+    void bounce(double[] surfaceNormVec) {
+        final RealVector normVec = new ArrayRealVector(surfaceNormVec);
         final RealVector normVec0 = normVec.mapDivide(normVec.getNorm());
 
         final RealMatrix normMatrix = MatrixUtils.createRealMatrix(
                 new double[][]{
-                        {normVec0.getEntry(0) * normVec0.getEntry(0), normVec0.getEntry(0), normVec0.getEntry(1)},
-                        {normVec0.getEntry(0) * normVec0.getEntry(1), normVec0.getEntry(1), normVec0.getEntry(1)}
+                        {normVec0.getEntry(0) * normVec0.getEntry(0), normVec0.getEntry(0) * normVec0.getEntry(1)},
+                        {normVec0.getEntry(0) * normVec0.getEntry(1), normVec0.getEntry(1) * normVec0.getEntry(1)}
                 }
         );
 
@@ -36,9 +36,6 @@ public class Ball extends SolidBody {
         final RealMatrix transformationMatrix = identity.subtract(normMatrix.scalarMultiply(2));
 
         final double[] newVelocity = transformationMatrix.operate(getVelocity());
-        for (int i = 0; i != newVelocity.length; ++i) {
-            newVelocity[i] *= -1;       // TODO проверить. Возможно, в оригинале эта мера вызвана левой системой координат.
-        }
 
         setVelocity(newVelocity);
     }

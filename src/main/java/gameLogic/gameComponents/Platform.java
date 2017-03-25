@@ -3,50 +3,57 @@ package gameLogic.gameComponents;
 
 import gameLogic.SolidBody;
 
-import java.util.Arrays;
 
 public class Platform extends SolidBody {
     private double length;
     private double width;
     private boolean isActive;
 
-    Platform(double length, double width, boolean isActive) {
+    public Platform(double length, double width, boolean isActive) {
         this.length = length;
         this.width = width;
         this.isActive = isActive;
     }
 
-    Platform(double length, double width) {
+    public Platform(double length, double width) {
         this.length = length;
         this.width = width;
         this.isActive = false;
     }
 
-    void setActive() {
+    public double getLength() {
+        return length;
+    }
+
+    public void setLength(double length) {
+        this.length = length;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public void setActive() {
         isActive = true;
     }
 
-    void setPassive() {
+    public void setPassive() {
         isActive = false;
     }
 
-    double getLeftBorder() {
-        return -length / 2;
-    }
-
-    double getRightBorder() {
-        return length / 2;
-    }
-
-    double getLowerBorder() {
-        return -width / 2;
-    }
-
-    double getUpperBorder() {
-        return width / 2;
-    }
-
-    double[][] getPointArray() {
+    public double[][] getPointArray() {
         final double[][] localPoints = new double[][] {
                 {getLeftBorder(), getLowerBorder()},
                 {getRightBorder(), getLowerBorder()},
@@ -54,15 +61,12 @@ public class Platform extends SolidBody {
                 {getLeftBorder(), getUpperBorder()}
         };
 
-        return (double[][]) Arrays.stream(localPoints).map(this::toGlobals).toArray();
-        /*
         final double[][] result = new double[localPoints.length][2];
         for (int i = 0; i != localPoints.length; ++i) {
-            result[i] = toGlobals(result[i]);
+            result[i] = toGlobals(localPoints[i]);
         }
 
         return result;
-        */
     }
 
     public double[] getNorm() {
@@ -80,18 +84,26 @@ public class Platform extends SolidBody {
         return false;
     }
 
+    private double getLeftBorder() {
+        return -length / 2;
+    }
+
+    private double getRightBorder() {
+        return length / 2;
+    }
+
+    private double getLowerBorder() {
+        return -width / 2;
+    }
+
+    private double getUpperBorder() {
+        return width / 2;
+    }
+
 }
 
 /*
 class Pllatform extends SolidBody {
-    constructor(length, width, isActive) {
-        super();
-        this._length = length;
-        this._width = width;
-        this._isActive = isActive || false;
-
-        this._optionalPositioningInfo = null;   // extra info necessary to make positioning inside another object
-    }
 
     static platformFromTriangleField(triangleField, _relativeDistance, _relativeLength, _width) {
         let relativeDistance = _relativeDistance || DEFAULT_RELATIVE_DISTANCE;
