@@ -3,75 +3,78 @@ package gameLogic.gameComponents;
 import gameLogic.SolidBody;
 import gameLogic.geometryShapes.Triangle;
 
-import java.util.Arrays;
-
 
 public class TriangleField extends SolidBody {
     private Triangle triangle;
     private Boolean isNeutral;
     private Boolean isLoser;
 
-    double getHeight() {
+    public TriangleField(double height, double sectorAngle) {
+        triangle = new Triangle(height, sectorAngle);
+        isNeutral = false;
+        isLoser = false;
+    }
+
+    public double getHeight() {
         return triangle.getHeight();
     }
 
-    double getHalfWidth() {
+    public double getHalfWidth() {
         return triangle.getHalfWidth();
     }
 
-    double[][] getPointArray() {
+    public double[][] getPointArray() {
         final double[][] localPoints = triangle.getPointArray();
-        return (double[][]) Arrays.stream(localPoints).map(this::toGlobals).toArray();
+
+        final double[][] result = new double[localPoints.length][2];
+        for (int i = 0; i != localPoints.length; ++i) {
+            result[i] = toGlobals(localPoints[i]);
+        }
+
+        return result;
     }
 
-    double[] getBottomNorm() {
+    public double[] getBottomNorm() {
         return this.toGlobalsWithoutOffset(new double[]{0, 1});
     }
 
-    boolean isNeutral() {
+    public boolean isNeutral() {
         return isNeutral;
     }
 
-    boolean isLoser() {
+    public boolean isLoser() {
         return isLoser;
     }
 
-    void setLoser() {
-        isLoser = true;
+    public void setLoser(boolean value) {
+        isLoser = value;
     }
 
-    boolean containsGlobalPoint(double[] point) {
+    public void setNeutral(boolean value) {
+        isNeutral = value;
+    }
+
+    public boolean containsGlobalPoint(double[] point) {
         return triangle.containsPoint(toLocals(point));
     }
 
-    boolean containsLocalPoint(double[] point) {
+    public boolean containsLocalPoint(double[] point) {
         return triangle.containsPoint(point);
     }
 
-    boolean reachesBottomLevel(Ball ball) {
+    public boolean reachesBottomLevel(Ball ball) {
         final double[] localBottomPosition = toLocals(ball.getOrigin());
         final double ballRadius = ball.getRadius();
 
         return triangle.getBottomDistance(localBottomPosition) < ballRadius;
     }
 
-    double getWidthOnDistance(double bottomDistance) {
+    public double getWidthOnDistance(double bottomDistance) {
         return triangle.getWidthOnDistance(bottomDistance);
     }
 
-    double getWidthRelativeDistance(double relativeDistance) {
+    public double getWidthOnRelativeDistance(double relativeDistance) {
         return triangle.getWidthOnDistance(relativeDistance * triangle.getHeight());
     }
 
 }
-
-/*
-class TriangleField extends SolidBody {
-    constructor(height, sectorAngle, isNeutral) {
-        super();
-        this._triangle = new shapes.Triangle(height, sectorAngle);
-        this._isNeutral = isNeutral;
-        this._isLoser = false;
-    }
-}
-*/

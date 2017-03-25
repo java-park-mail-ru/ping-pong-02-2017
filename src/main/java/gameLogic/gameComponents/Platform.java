@@ -9,16 +9,75 @@ public class Platform extends SolidBody {
     private double width;
     private boolean isActive;
 
+    private SectorPositionInfo sectorPositionInfo;
+
+    private static class SectorPositionInfo {
+        private double[] originalPosition;
+        private double maxOffset;
+
+        public double[] getOriginalPosition() {
+            return originalPosition;
+        }
+
+        public void setOriginalPosition(double[] originalPosition) {
+            this.originalPosition = originalPosition;
+        }
+
+        public double getMaxOffset() {
+            return maxOffset;
+        }
+
+        public void setMaxOffset(double maxOffset) {
+            this.maxOffset = maxOffset;
+        }
+
+        SectorPositionInfo(double[] originalPosition, double maxOffset) {
+            this.originalPosition = originalPosition;
+            this.maxOffset = maxOffset;
+        }
+
+        SectorPositionInfo() {
+            originalPosition = new double[]{0, 0};
+            maxOffset = Double.POSITIVE_INFINITY;
+        }
+    }
+
     public Platform(double length, double width, boolean isActive) {
         this.length = length;
         this.width = width;
         this.isActive = isActive;
+        this.sectorPositionInfo = new SectorPositionInfo();
     }
 
     public Platform(double length, double width) {
         this.length = length;
         this.width = width;
         this.isActive = false;
+        this.sectorPositionInfo = new SectorPositionInfo();
+    }
+
+    public static Platform platformFromTriangleField(
+            TriangleField sector, double relativeDistance, double relativeLength, double width
+    ) {
+
+        final double[] position = sector.toGlobals(
+                new double[]{0, sector.getHeight() * (relativeDistance - 1)}
+        );  // using such coordinates because triangleField coordinate system origin is in the topmost corner.
+
+        final double totalLength = sector.getWidthOnRelativeDistance(relativeDistance);
+
+        final Platform platform = new Platform(totalLength * relativeLength, width);
+        platform.moveTo(position);
+        platform.rotateTo(sector.getAngle());
+
+        platform.updateSectorPositioning(platform.getOrigin(), totalLength * (1 - relativeLength) / 2);
+
+        return platform;
+    }
+
+    public void updateSectorPositioning(double[] originalPosition, double maxOffset) {
+        sectorPositionInfo.setOriginalPosition(originalPosition);
+        sectorPositionInfo.setMaxOffset(maxOffset);
     }
 
     public double getLength() {
@@ -101,43 +160,3 @@ public class Platform extends SolidBody {
     }
 
 }
-
-/*
-class Pllatform extends SolidBody {
-
-    static platformFromTriangleField(triangleField, _relativeDistance, _relativeLength, _width) {
-        let relativeDistance = _relativeDistance || DEFAULT_RELATIVE_DISTANCE;
-        let relativeLength = _relativeLength || DEFAULT_RELATIVE_LENGTH;
-        let width = _width || DEFAULT_WIDTH;
-
-        let position = triangleField.toGlobals([0, triangleField.height * (relativeDistance - 1)]); // using such
-        // coordinates because triangleField coordinate system origin is in the topmost corner.
-        let rotation = triangleField.rotation;
-        let totalLength = triangleField.getWidthOnRelativeDistance(relativeDistance);
-        let platformLength = totalLength * relativeLength;
-
-        let platform = new Platform(platformLength, width);
-        platform.moveTo(position);
-        platform.rotateTo(rotation);
-
-        platform.optionalPositioningInfo = {
-                "originalPosition": platform.position.slice(),
-                "maxOffset": totalLength * (1 - relativeLength) / 2
-        };
-
-        return platform;
-    }
-
-
-
-
-    get optionalPositioningInfo() {
-        return this._optionalPositioningInfo;
-    }
-
-    set optionalPositioningInfo(optionalInfo) {
-        this._optionalPositioningInfo = optionalInfo;
-    }
-
-}
-*/
