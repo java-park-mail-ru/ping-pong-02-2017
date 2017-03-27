@@ -1,9 +1,6 @@
 package gameLogic.gameComponents;
 
 
-import gameLogic.SolidBody;
-
-
 public class Platform extends SolidBody {
     private double length;
     private double width;

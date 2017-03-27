@@ -1,4 +1,4 @@
-package gameLogic;
+package gameLogic.gameComponents;
 
 
 import org.apache.commons.math3.linear.ArrayRealVector;

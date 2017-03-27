@@ -1,4 +1,4 @@
-package gameLogic;
+package gameLogic.game;
 
 
 import gameLogic.gameComponents.Ball;
@@ -41,6 +41,7 @@ public class GameWorld {
 
         userSectors = new ArrayList<>();
         neutralSectors = new ArrayList<>();
+        platforms = new ArrayList<>();
 
         initSectors();
         initBall();

@@ -1,5 +1,6 @@
 package gameLogic;
 
+import gameLogic.gameComponents.SolidBody;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

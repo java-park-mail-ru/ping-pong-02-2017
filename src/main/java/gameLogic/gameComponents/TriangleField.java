@@ -1,6 +1,5 @@
 package gameLogic.gameComponents;
 
-import gameLogic.SolidBody;
 import gameLogic.geometryShapes.Triangle;
 
 
@@ -13,6 +12,8 @@ public class TriangleField extends SolidBody {
         triangle = new Triangle(height, sectorAngle);
         isNeutral = false;
         isLoser = false;
+
+        setOrigin(new double[] {0, 0});
     }
 
     public double getHeight() {

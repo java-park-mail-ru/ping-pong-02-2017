@@ -1,7 +1,6 @@
 package gameLogic.gameComponents;
 
 
-import gameLogic.SolidBody;
 import gameLogic.geometryShapes.Circle;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -21,7 +20,7 @@ public class Ball extends SolidBody {
         return this.circle.getRadius();
     }
 
-    void bounce(double[] surfaceNormVec) {
+    public void bounce(double[] surfaceNormVec) {
         final RealVector normVec = new ArrayRealVector(surfaceNormVec);
         final RealVector normVec0 = normVec.mapDivide(normVec.getNorm());
 
