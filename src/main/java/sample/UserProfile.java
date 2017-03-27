@@ -15,11 +15,11 @@ public class UserProfile {
     private long id;
 
     public UserProfile(UserProfile userProfile) {
-        this.email = userProfile.email;
-        this.login = userProfile.login;
-        this.password = userProfile.password;
+        this.email = userProfile.getEmail();
+        this.login = userProfile.getLogin();
+        this.password = userProfile.getPassword();
         this.id = userProfile.getId();
-        this.score = userProfile.score;
+        this.score = userProfile.getScore();
     }
 
     public UserProfile(@JsonProperty("email") String email, @JsonProperty("login") String login,

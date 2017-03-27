@@ -2,6 +2,8 @@ package sample;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -11,10 +13,11 @@ import java.util.*;
  */
 
 @Service
-public class AccountService {
+public class AccountServiceHM implements AccountServiceInterface {
     private Map<String, UserProfile> userStorage = new HashMap<>();
 
     @Nullable
+    @Override
     public UserProfile register(@NotNull String email, @NotNull String login, @NotNull String password) {
         final UserProfile userProfile = new UserProfile(email, login, password);
         if(!userStorage.containsKey(email)) {
@@ -25,33 +28,42 @@ public class AccountService {
         return null;
     }
 
-
+    @Override
     public boolean login(@NotNull String email, @NotNull String password) {
-        return userStorage.containsKey(email) && userStorage.get(email).getPassword().equals(password);
+        return userStorage.containsKey(email) && passwordEncoder().matches(password, userStorage.get(email).getPassword());
     }
 
+    @Override
     public UserProfile getUser(@NotNull String email) {
         return userStorage.get(email);
     }
 
     @Nullable
+    @Override
     public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
-        if(!isEmptyField(changedProfile.getEmail())) {
+        if (!isEmptyField(changedProfile.getEmail())) {
             if (!changedProfile.getEmail().equals(userProfile.getEmail()) &&
                     userStorage.containsKey(changedProfile.getEmail())) {
                 return null;
             }
         }
+
         userStorage.remove(userProfile.getEmail());
+        if (passwordEncoder().matches(changedProfile.getPassword(), userProfile.getPassword())) {
+            changedProfile.setPassword("");
+        }
+
         updateNotNullFields(userProfile, changedProfile);
         userStorage.put(userProfile.getEmail(), userProfile);
         return userProfile;
     }
 
+    @Override
     public void updateScore(@NotNull UserProfile userProfile) {
         userStorage.put(userProfile.getEmail(), userProfile);
     }
 
+    @Override
     public ArrayList<UserProfile> getSortedUsersByScore() {
         final ArrayList<UserProfile> userProfileArrayList = new ArrayList<UserProfile>();
         userProfileArrayList.addAll(userStorage.values());
@@ -72,7 +84,7 @@ public class AccountService {
     }
 
     private boolean isEmptyField(String field) {
-        return (field == null) || field.isEmpty();
+        return ((field == null) || field.isEmpty());
     }
 
     private void updateNotNullFields(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
@@ -83,12 +95,17 @@ public class AccountService {
             userProfile.setLogin(changedProfile.getLogin());
         }
         if(!isEmptyField(changedProfile.getPassword())) {
-            userProfile.setPassword(changedProfile.getPassword());
+            userProfile.setPassword(passwordEncoder().encode(changedProfile.getPassword()));
+            System.out.println(userProfile.getPassword());
         }
     }
 
     public void flush() {
         userStorage.clear();
+    }
+
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
 
