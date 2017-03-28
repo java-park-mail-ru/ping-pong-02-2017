@@ -15,7 +15,7 @@ public interface AccountServiceInterface {
     boolean login(@NotNull String email, @NotNull String password);
     UserProfile getUser(@NotNull String email);
     UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile);
-    void updateScore(@NotNull UserProfile userProfile);
+    UserProfile updateScore(@NotNull UserProfile userProfile);
     List<UserProfile> getSortedUsersByScore(int count);
     void flush();
 }
