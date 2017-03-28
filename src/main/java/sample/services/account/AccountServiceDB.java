@@ -34,7 +34,7 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     public boolean login(@NotNull String email, @NotNull String password) {
         try {
-            UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE email = ?::citext",
+            UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
                     new Object[]{email}, new UserMapper());
             return passwordEncoder().matches(password, userProfile.getPassword());
         } catch (DataAccessException e) {
@@ -44,7 +44,7 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     public UserProfile getUser(@NotNull String email) {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE email = ?::citext",
+            return jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
                     new Object[]{email}, new UserMapper());
         } catch (DataAccessException e) {
             return null;
@@ -52,44 +52,29 @@ public class AccountServiceDB implements AccountServiceInterface {
     }
 
     public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
-        if (!isEmptyField(changedProfile.getEmail())) {
-            if (!changedProfile.getEmail().equals(userProfile.getEmail()) &&
-                    getUser(changedProfile.getEmail()) != null) { //такой email занят другим пользователем
-                return null;
-            }
-        }
-
         if (passwordEncoder().matches(changedProfile.getPassword(), userProfile.getPassword())) {
             changedProfile.setPassword("");
         }
 
         updateNotNullFields(userProfile, changedProfile);
 
-        if(userProfile.getEmail().equals(changedProfile.getEmail())) {
-            try {
-                jdbcTemplate.update("DELETE FROM \"User\" WHERE email = ?::citext",userProfile.getEmail());
-                jdbcTemplate.update("INSERT INTO \"User\" (login, email, password, score) values (?, ?, ?, ?) ",
-                        userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore());
-                return getUser(userProfile.getEmail());
-            } catch (DataAccessException e) {
-                return null;
-            }
-        }
         try {
-            jdbcTemplate.update("INSERT INTO \"User\" (login, email, password, score) values (?, ?, ?, ?) ",
-                    userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore());
+            jdbcTemplate.update("UPDATE \"User\" SET login = ?, email = ?, password = ?, score = ? WHERE id = ?",
+                    userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore(), userProfile.getId());
             return getUser(userProfile.getEmail());
         } catch (DataAccessException e) {
             return null;
         }
+
     }
 
-    public void updateScore(@NotNull UserProfile userProfile) {
+    public UserProfile updateScore(@NotNull UserProfile userProfile) {
         try {
-            jdbcTemplate.update("UPDATE \"User\" SET score = ? WHERE email = ?::citext",
+            jdbcTemplate.update("UPDATE \"User\" SET score = ? WHERE LOWER(email) = LOWER(?)",
                     userProfile.getScore(), userProfile.getEmail());
+            return getUser(userProfile.getEmail());
         } catch (DataAccessException e) {
-            return;
+            return null;
         }
     }
 

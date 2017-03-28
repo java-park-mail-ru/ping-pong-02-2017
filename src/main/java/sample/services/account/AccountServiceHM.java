@@ -60,8 +60,9 @@ public class AccountServiceHM implements AccountServiceInterface {
     }
 
     @Override
-    public void updateScore(@NotNull UserProfile userProfile) {
+    public UserProfile updateScore(@NotNull UserProfile userProfile) {
         userStorage.put(userProfile.getEmail(), userProfile);
+        return userStorage.get(userProfile.getEmail());
     }
 
     @Override
