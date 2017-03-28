@@ -174,12 +174,6 @@ public class UserController {
         }
     }
 
-    @GetMapping(path = "/api/user/flush")
-    public void flush() {
-        accountService.flush();
-    }
-
-
     private boolean isEmptyField(String field) {
         return ((field == null) || field.isEmpty());
     }

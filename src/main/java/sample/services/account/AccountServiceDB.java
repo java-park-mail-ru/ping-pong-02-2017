@@ -90,10 +90,6 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
-    public void flush() {
-
-    }
-
     private boolean isEmptyField(String field) {
         return ((field == null) || field.isEmpty());
     }

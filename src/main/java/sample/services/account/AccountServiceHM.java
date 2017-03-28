@@ -102,9 +102,6 @@ public class AccountServiceHM implements AccountServiceInterface {
         }
     }
 
-    public void flush() {
-        userStorage.clear();
-    }
 
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
