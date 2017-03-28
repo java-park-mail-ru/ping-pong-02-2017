@@ -21,6 +21,7 @@ public class AccountServiceDB implements AccountServiceInterface {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    @Override
     public UserProfile register(UserProfile userProfile) {
         try {
             jdbcTemplate.update("INSERT INTO \"User\" (login, email, password, score) values (?, ?, ?, ?) ",
@@ -33,6 +34,7 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     }
 
+    @Override
     public boolean login(@NotNull String email, @NotNull String password) {
         try {
             UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
@@ -44,6 +46,7 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
+    @Override
     public UserProfile getUser(@NotNull String email) {
         try {
             return jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
@@ -54,6 +57,7 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
+    @Override
     public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
         if (passwordEncoder().matches(changedProfile.getPassword(), userProfile.getPassword())) {
             changedProfile.setPassword("");
@@ -71,6 +75,7 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     }
 
+    @Override
     public UserProfile updateScore(@NotNull UserProfile userProfile) {
         try {
             jdbcTemplate.update("UPDATE \"User\" SET score = ? WHERE LOWER(email) = LOWER(?)",
@@ -81,6 +86,7 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
+    @Override
     public List<UserProfile> getSortedUsersByScore(int count) {
         try {
             return jdbcTemplate.query("SELECT * FROM \"User\" ORDER BY score DESC LIMIT ?",

@@ -2,6 +2,7 @@ package sample;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -13,8 +14,8 @@ public class ResponseWrapper<T> {
     private T data;
 
     @JsonCreator
-    public ResponseWrapper(@JsonProperty("errors") List<String> errors,
-                           @JsonProperty("data") T data) {
+    public ResponseWrapper(@Nullable @JsonProperty("errors") List<String> errors,
+                           @Nullable @JsonProperty("data") T data) {
         this.errors = errors;
         this.data = data;
     }

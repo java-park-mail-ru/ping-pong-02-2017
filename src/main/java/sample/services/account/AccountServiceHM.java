@@ -67,19 +67,15 @@ public class AccountServiceHM implements AccountServiceInterface {
 
     @Override
     public List<UserProfile> getSortedUsersByScore(int count) {
-        final ArrayList<UserProfile> userProfileArrayList = new ArrayList<UserProfile>();
+        final ArrayList<UserProfile> userProfileArrayList = new ArrayList<>();
         userProfileArrayList.addAll(userStorage.values());
-        Collections.sort(userProfileArrayList, new Comparator<UserProfile>() {
-            @Override
-            public int compare(UserProfile o1, UserProfile o2) {
-                if(o1.getScore() < o2.getScore()) {
-                    return 1;
-                }
-                else if(o1.getScore() > o2.getScore()) {
-                    return -1;
-                }
-                return 0;
+        userProfileArrayList.sort((o1, o2) -> {
+            if (o1.getScore() < o2.getScore()) {
+                return 1;
+            } else if (o1.getScore() > o2.getScore()) {
+                return -1;
             }
+            return 0;
         });
 
         return  userProfileArrayList;
@@ -102,6 +98,7 @@ public class AccountServiceHM implements AccountServiceInterface {
         }
     }
 
+    @Override
     public void flush() {
         userStorage.clear();
     }
