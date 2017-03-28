@@ -67,7 +67,12 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     @Nullable
     @Override
-    public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
+    public UserProfile update(@NotNull String email, @NotNull UserProfile changedProfile) {
+        UserProfile userProfile = getUser(email);
+        if (userProfile == null) {
+            return changedProfile;
+        }
+
         if (passwordEncoder().matches(changedProfile.getPassword(), userProfile.getPassword())) {
             changedProfile.setPassword("");
         }

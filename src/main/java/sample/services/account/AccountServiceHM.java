@@ -41,7 +41,11 @@ public class AccountServiceHM implements AccountServiceInterface {
 
     @Nullable
     @Override
-    public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
+    public UserProfile update(@NotNull String email, @NotNull UserProfile changedProfile) {
+        UserProfile userProfile = userStorage.get(email);
+        if (userProfile == null) {
+            return changedProfile;
+        }
         if (!isEmptyField(changedProfile.getEmail())) {
             if (!changedProfile.getEmail().equals(userProfile.getEmail()) &&
                     userStorage.containsKey(changedProfile.getEmail())) {

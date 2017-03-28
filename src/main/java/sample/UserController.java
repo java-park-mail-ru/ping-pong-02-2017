@@ -115,8 +115,8 @@ public class UserController {
         if(httpSession.getAttribute("email") != null) {
             if(!isEmptyField(changedUserProfile.getEmail()) || !isEmptyField(changedUserProfile.getPassword()) ||
                     !isEmptyField(changedUserProfile.getLogin())) {
-                final UserProfile oldUserProfile = accountService.getUser(httpSession.getAttribute("email").toString());
-                final UserProfile updatedUserProfile = accountService.update(oldUserProfile, changedUserProfile);
+                final UserProfile updatedUserProfile = accountService.update(
+                        httpSession.getAttribute("email").toString(), changedUserProfile);
 
                 if (updatedUserProfile == null) {
                     errorList.add("this email is occupied");
