@@ -1,10 +1,12 @@
-package sample;
+package sample.services.account;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sample.UserProfile;
+import sample.services.account.AccountServiceInterface;
 
 import java.util.*;
 

@@ -73,8 +73,8 @@ public class GameWorld {
 
             final TriangleField neutralSector = new TriangleField(sectorHeight, sectorAngle);
             neutralSector.setNeutral(true);
-            userSector.rotateTo((2 * i + 1) * sectorAngle);
-            userSector.moveTo(worldOrigin);
+            neutralSector.rotateTo((2 * i + 1) * sectorAngle);
+            neutralSector.moveTo(worldOrigin);
 
             userSectors.add(userSector);
             neutralSectors.add(neutralSector);
@@ -93,7 +93,8 @@ public class GameWorld {
 
     private void initBall() {
         ball = new Ball(ballRadius);
-        ball.moveTo(worldOrigin);
+        //ball.moveTo(worldOrigin);
+        ball.moveTo(new double[] {0, 50});  // TODO remove (debug purpose only)
     }
 
 }

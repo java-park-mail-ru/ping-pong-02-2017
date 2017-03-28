@@ -15,7 +15,7 @@ public class GameConfig {
     public static final int DEFAULT_PLAYERS_NUM = 4;
     public static final int DEFAULT_FRAME_RATE = 60;
     public static final double DEFAULT_BALL_RELATIVE_RADIUS = 0.05;
-    public static final double[] DEFAULT_RELATIVE_BALL_VELOCITY = new double[]{0.25, 0.25};
+    public static final double[] DEFAULT_RELATIVE_BALL_VELOCITY = new double[]{0.025, 0};
 
 
     public static GameConfig getDefaultConfig() {

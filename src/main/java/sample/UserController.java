@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import sample.services.account.AccountServiceDB;
+import sample.services.account.AccountServiceHM;
+import sample.services.account.AccountServiceInterface;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -23,8 +27,8 @@ import java.util.List;
 @RestController
 public class UserController {
     @NotNull
-    private final AccountServiceHM accountService;
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private final AccountServiceInterface accountService;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
 
     @PostMapping(path = "/api/user/registration")
@@ -158,21 +162,21 @@ public class UserController {
 
     @PostMapping(path = "/api/user/leaders")
     public ResponseEntity<ResponseWrapper> getLeaders(@RequestBody ObjectNode countJSON, HttpSession httpSession , HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
+        final ObjectNode responseJSON = MAPPER.createObjectNode();
         int usersCounter;
         if(countJSON.get("count") == null) {
             usersCounter = 1;
         } else {
             usersCounter = countJSON.get("count").intValue();
         }
-        final ArrayNode leadersList = mapper.createArrayNode();
+        final ArrayNode leadersList = MAPPER.createArrayNode();
         final ArrayList<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore();
         return new ResponseEntity<>(new ResponseWrapper(null, userProfileArrayList), HttpStatus.OK);
     }
 
     @GetMapping(path = "/api/user/islogin")
     public ObjectNode isLogin(HttpSession httpSession, HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
+        final ObjectNode responseJSON = MAPPER.createObjectNode();
         if(httpSession.getAttribute("email") != null) {
             responseJSON.put("isLoggedIn","true");
         } else {
@@ -195,7 +199,7 @@ public class UserController {
         return ("field " + fieldName + " is empty");
     }
 
-    public UserController(@NotNull AccountServiceHM accountService) {
+    public UserController(@NotNull AccountServiceDB accountService) {
         this.accountService = accountService;
     }
 

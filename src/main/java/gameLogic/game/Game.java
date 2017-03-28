@@ -5,6 +5,7 @@ import gameLogic.gameComponents.Ball;
 import gameLogic.gameComponents.Platform;
 import gameLogic.gameComponents.SolidBody;
 import gameLogic.gameComponents.TriangleField;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -12,14 +13,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class Game {
+public class Game implements Runnable {
     public static final double SECTOR_HEIGHT = 100;
     public static final int MILLISECONDS_PER_SECOND = 1000;
 
     private GameConfig gameConfig;
     private GameWorld gameWorld;
     private SolidBody lastCollidedObject;
-
 
     Game(GameConfig gameConfig) {
         this.gameConfig = gameConfig;
@@ -33,12 +33,8 @@ public class Game {
         setInitialBallVelocity();
     }
 
-    public static void main(String[] args) {
-        Game game = new Game();
-        game.start();
-    }
-
-    public void start() {
+    @Override
+    public void run() {
         final Timer timer = new Timer();
 
         final Game game = this;
@@ -47,7 +43,6 @@ public class Game {
             @Override
             public void run() {
                 game.makeIteration(updatePeriod);
-                System.out.println(Arrays.toString(gameWorld.getBall().getOrigin()));
             }
         };
 
@@ -74,7 +69,7 @@ public class Game {
         for (TriangleField sector : gameWorld.getUserSectors()) {
             if (sector.containsGlobalPoint(ball.getOrigin()) &&
                     sector.reachesBottomLevel(ball)) {
-                handleUserSectorCollision(sector);
+                handleUserSectorCollision(sector, ball);
             }
         }
 
@@ -110,11 +105,16 @@ public class Game {
         gameWorld.getBall().setVelocity(ballVelocity);
     }
 
-    private void handleUserSectorCollision(TriangleField sector) {
+    private void handleUserSectorCollision(TriangleField sector, Ball ball) {
         if (!Objects.equals(sector, lastCollidedObject)) {
             this.stop();
             sector.setLoser(true);
+
+            ball.bounce(sector.getBottomNorm());    // TODO remove (for debug purpose only)
+            lastCollidedObject = sector;
         }
+
+        System.out.println("User sector bump!");
     }
 
     private void handleNeutralSectorCollision(TriangleField sector, Ball ball) {
@@ -122,6 +122,8 @@ public class Game {
             ball.bounce(sector.getBottomNorm());
             lastCollidedObject = sector;
         }
+
+        System.out.println("Neutral sector bump!");
     }
 
     private void handlePlatformCollision(Platform platform, Ball ball) {
@@ -129,6 +131,8 @@ public class Game {
             ball.bounce(platform.getNorm());
             lastCollidedObject = platform;
         }
+
+        System.out.println("Platform bump!");
     }
 
 }
