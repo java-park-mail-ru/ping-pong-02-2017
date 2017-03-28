@@ -89,6 +89,7 @@ public class AccountServiceTest {
         assertEquals(accountService.getUser(getRandomUser().getEmail()), null);
     }
 
+    /*
     @Test
     public void testSuccessfullUserUpdate() {
         System.out.println("Testing successfull user update");
@@ -104,6 +105,7 @@ public class AccountServiceTest {
         assertTrue(isEqual(newUser, userUpdate));
         System.out.println("OK");
     }
+
 
     @Test
     public void testEmailConflictUserUpdate() {
@@ -123,6 +125,7 @@ public class AccountServiceTest {
 
         System.out.println("OK");
     }
+    */
 
     @Test
     public void testNonExistingUserUpdate() {
@@ -146,9 +149,8 @@ public class AccountServiceTest {
 
         final int newScore = 100;
         userProfile.setScore(newScore);
-        accountService.updateScore(userProfile);
+        final UserProfile newUser = accountService.updateScore(userProfile);
 
-        final UserProfile newUser = accountService.getUser(userProfile.getEmail());
         assertEquals(newUser.getScore(), newScore);
 
         System.out.println("OK");
@@ -158,11 +160,8 @@ public class AccountServiceTest {
     public void testNonExistingUserScoreUpdate() {
         System.out.println("Test non existing user score update");
 
-        final UserProfile userProfile = getRandomUser();
-        final int newScore = 100;
-        userProfile.setScore(newScore);
-
-        assertEquals(0, 1); //TODO switch to normal update
+        final UserProfile extractedUser = accountService.updateScore(getRandomUser());
+        assertEquals(extractedUser, null);
 
         System.out.println("OK");
     }
@@ -202,6 +201,11 @@ public class AccountServiceTest {
 
     }
 
+    @Test
+    public void testDataBaseFlush() {
+
+    }
+
     private UserProfile getRandomUser() {
         return new UserProfile(getRandomString(), getRandomString(), getRandomString());
     }
@@ -217,9 +221,7 @@ public class AccountServiceTest {
 
 /*
 interface AccountServiceInterface {
-    boolean login(@NotNull String email, @NotNull String password);
-    UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile);
-    List<UserProfile> getSortedUsersByScore(int count);
+    //boolean login(@NotNull String email, @NotNull String password);
     void flush();
 }
 */
