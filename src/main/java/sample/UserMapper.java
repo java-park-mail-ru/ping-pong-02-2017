@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class UserMapper implements RowMapper<UserProfile> {
     @Override
     public UserProfile mapRow(ResultSet resultSet, int i) throws SQLException {
-        UserProfile userProfile = new UserProfile();
+        final UserProfile userProfile = new UserProfile();
         userProfile.setLogin(resultSet.getString("login"));
         userProfile.setEmail(resultSet.getString("email"));
         userProfile.setPassword(resultSet.getString("password"));

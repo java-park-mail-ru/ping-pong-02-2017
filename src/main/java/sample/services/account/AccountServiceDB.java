@@ -1,6 +1,7 @@
 package sample.services.account;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,9 +19,15 @@ import java.util.List;
 
 @Service("AccountServiceDB")
 public class AccountServiceDB implements AccountServiceInterface {
-    @Autowired
+    final
     JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    public AccountServiceDB(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Nullable
     @Override
     public UserProfile register(UserProfile userProfile) {
         try {
@@ -37,7 +44,7 @@ public class AccountServiceDB implements AccountServiceInterface {
     @Override
     public boolean login(@NotNull String email, @NotNull String password) {
         try {
-            UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
+            final UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
                     new Object[]{email}, new UserMapper());
             return passwordEncoder().matches(password, userProfile.getPassword());
         } catch (DataAccessException e) {
@@ -46,6 +53,7 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
+    @Nullable
     @Override
     public UserProfile getUser(@NotNull String email) {
         try {
@@ -57,6 +65,7 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
+    @Nullable
     @Override
     public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile) {
         if (passwordEncoder().matches(changedProfile.getPassword(), userProfile.getPassword())) {
@@ -75,6 +84,7 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     }
 
+    @Nullable
     @Override
     public UserProfile updateScore(@NotNull UserProfile userProfile) {
         try {
@@ -94,10 +104,6 @@ public class AccountServiceDB implements AccountServiceInterface {
         } catch (DataAccessException e) {
             return null;
         }
-    }
-
-    public void flush() {
-
     }
 
     private boolean isEmptyField(String field) {

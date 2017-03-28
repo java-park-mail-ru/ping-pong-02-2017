@@ -17,5 +17,4 @@ public interface AccountServiceInterface {
     UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile);
     UserProfile updateScore(@NotNull UserProfile userProfile);
     List<UserProfile> getSortedUsersByScore(int count);
-    void flush();
 }
