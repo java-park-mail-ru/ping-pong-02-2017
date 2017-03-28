@@ -1,17 +1,13 @@
 package sample;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import sample.services.account.AccountServiceDB;
-import sample.services.account.AccountServiceHM;
 import sample.services.account.AccountServiceInterface;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +24,6 @@ import java.util.List;
 public class UserController {
     @NotNull
     private final AccountServiceInterface accountService;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
 
     @PostMapping(path = "/api/user/registration")
@@ -52,7 +47,7 @@ public class UserController {
 
         body.setPassword(passwordEncoder().encode(body.getPassword()));
 
-        final UserProfile userProfile = accountService.register(body.getEmail(), body.getLogin(), body.getPassword());
+        final UserProfile userProfile = accountService.register(body);
         if(userProfile != null) {
             httpSession.setAttribute("email", body.getEmail());
             return new ResponseEntity<>(new ResponseWrapper(null, userProfile), HttpStatus.OK);
@@ -160,29 +155,23 @@ public class UserController {
         }
     }
 
-    @PostMapping(path = "/api/user/leaders")
-    public ResponseEntity<ResponseWrapper> getLeaders(@RequestBody ObjectNode countJSON, HttpSession httpSession , HttpServletResponse response) {
-        final ObjectNode responseJSON = MAPPER.createObjectNode();
+    @PostMapping(path = "/api/user/leaders/{count}")
+    public ResponseEntity<ResponseWrapper> getLeaders(@PathVariable("count") Integer count, HttpSession httpSession , HttpServletResponse response) {
         int usersCounter;
-        if(countJSON.get("count") == null) {
-            usersCounter = 1;
-        } else {
-            usersCounter = countJSON.get("count").intValue();
+        if(count == null || count < 1) {
+            count = 1;
         }
-        final ArrayNode leadersList = MAPPER.createArrayNode();
-        final ArrayList<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore();
+        final ArrayList<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore(count);
         return new ResponseEntity<>(new ResponseWrapper(null, userProfileArrayList), HttpStatus.OK);
     }
 
     @GetMapping(path = "/api/user/islogin")
-    public ObjectNode isLogin(HttpSession httpSession, HttpServletResponse response) {
-        final ObjectNode responseJSON = MAPPER.createObjectNode();
+    public ResponseEntity<ResponseWrapper> isLogin(HttpSession httpSession, HttpServletResponse response) {
         if(httpSession.getAttribute("email") != null) {
-            responseJSON.put("isLoggedIn","true");
+            return new ResponseEntity<>(new ResponseWrapper(null, "true"), HttpStatus.OK);
         } else {
-            responseJSON.put("isLoggedIn","false");
+            return new ResponseEntity<>(new ResponseWrapper(null, "false"), HttpStatus.OK);
         }
-        return responseJSON;
     }
 
     @GetMapping(path = "/api/user/flush")

@@ -8,13 +8,15 @@ import java.util.ArrayList;
 /**
  * Created by sergey on 26.03.17.
  */
+
+
 public interface AccountServiceInterface {
-    UserProfile register(@NotNull String email, @NotNull String login, @NotNull String password);
-    boolean login(@NotNull String email, @NotNull String password);
-    UserProfile getUser(@NotNull String email);
-    UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile);
-    void updateScore(@NotNull UserProfile userProfile);
-    ArrayList<UserProfile> getSortedUsersByScore();
-    void flush();
+    public UserProfile register(UserProfile userProfile);
+    public boolean login(@NotNull String email, @NotNull String password);
+    public UserProfile getUser(@NotNull String email);
+    public UserProfile update(@NotNull UserProfile userProfile, @NotNull UserProfile changedProfile);
+    public void updateScore(@NotNull UserProfile userProfile);
+    public ArrayList<UserProfile> getSortedUsersByScore(int count);
+    public void flush();
 
 }

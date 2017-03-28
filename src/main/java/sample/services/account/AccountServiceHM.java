@@ -6,7 +6,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sample.UserProfile;
-import sample.services.account.AccountServiceInterface;
 
 import java.util.*;
 
@@ -20,11 +19,11 @@ public class AccountServiceHM implements AccountServiceInterface {
 
     @Nullable
     @Override
-    public UserProfile register(@NotNull String email, @NotNull String login, @NotNull String password) {
-        final UserProfile userProfile = new UserProfile(email, login, password);
-        if(!userStorage.containsKey(email)) {
+    public UserProfile register(UserProfile userToRegister) {
+        final UserProfile userProfile = new UserProfile(userToRegister);
+        if(!userStorage.containsKey(userProfile.getEmail())) {
             userProfile.setId();
-            userStorage.put(email, userProfile);
+            userStorage.put(userProfile.getEmail(), userProfile);
             return userProfile;
         }
         return null;
@@ -66,7 +65,7 @@ public class AccountServiceHM implements AccountServiceInterface {
     }
 
     @Override
-    public ArrayList<UserProfile> getSortedUsersByScore() {
+    public ArrayList<UserProfile> getSortedUsersByScore(int count) {
         final ArrayList<UserProfile> userProfileArrayList = new ArrayList<UserProfile>();
         userProfileArrayList.addAll(userStorage.values());
         Collections.sort(userProfileArrayList, new Comparator<UserProfile>() {
