@@ -29,6 +29,10 @@ public class UserProfile {
         this.login = login;
     }
 
+    public UserProfile() {
+
+    }
+
     private static final AtomicLong ID_GENERATOR = new AtomicLong(1);
 
     public final void setId() {
@@ -55,6 +59,9 @@ public class UserProfile {
         return score;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public void setEmail(String email) {
         this.email = email;
