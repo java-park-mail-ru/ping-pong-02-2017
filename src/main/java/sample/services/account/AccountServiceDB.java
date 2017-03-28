@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import sample.UserMapper;
 import sample.UserProfile;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sergey on 26.03.17.
@@ -27,6 +27,7 @@ public class AccountServiceDB implements AccountServiceInterface {
                     userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore());
             return getUser(userProfile.getEmail());
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return null;
         }
 
@@ -38,6 +39,7 @@ public class AccountServiceDB implements AccountServiceInterface {
                     new Object[]{email}, new UserMapper());
             return passwordEncoder().matches(password, userProfile.getPassword());
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -47,6 +49,7 @@ public class AccountServiceDB implements AccountServiceInterface {
             return jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE LOWER(email) = LOWER(?)",
                     new Object[]{email}, new UserMapper());
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -78,9 +81,9 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
-    public ArrayList<UserProfile> getSortedUsersByScore(int count) {
+    public List<UserProfile> getSortedUsersByScore(int count) {
         try {
-            return (ArrayList<UserProfile>) jdbcTemplate.query("SELECT * FROM \"User\" ORDER BY score DESC LIMIT ?",
+            return jdbcTemplate.query("SELECT * FROM \"User\" ORDER BY score DESC LIMIT ?",
                     new Object[]{count}, new UserMapper());
         } catch (DataAccessException e) {
             return null;

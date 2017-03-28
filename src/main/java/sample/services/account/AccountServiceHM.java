@@ -66,7 +66,7 @@ public class AccountServiceHM implements AccountServiceInterface {
     }
 
     @Override
-    public ArrayList<UserProfile> getSortedUsersByScore(int count) {
+    public List<UserProfile> getSortedUsersByScore(int count) {
         final ArrayList<UserProfile> userProfileArrayList = new ArrayList<UserProfile>();
         userProfileArrayList.addAll(userStorage.values());
         Collections.sort(userProfileArrayList, new Comparator<UserProfile>() {
