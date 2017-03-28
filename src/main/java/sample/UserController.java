@@ -27,8 +27,8 @@ public class UserController {
 
 
     @PostMapping(path = "/api/user/registration")
-    public ResponseEntity<ResponseWrapper> register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
-        final List errorList = new ArrayList();
+    public ResponseEntity<ResponseWrapper<UserProfile>> register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
+        final List<String> errorList = new ArrayList<String>();
         if(isEmptyField(body.getEmail())) {
             errorList.add(getEmptyFieldError("email"));
         }
@@ -41,8 +41,8 @@ public class UserController {
             errorList.add(getEmptyFieldError("login"));
         }
 
-        if (errorList.size() > 0) {
-            return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.BAD_REQUEST);
+        if (!errorList.isEmpty()) {
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
 
         body.setPassword(passwordEncoder().encode(body.getPassword()));
@@ -50,16 +50,16 @@ public class UserController {
         final UserProfile userProfile = accountService.register(body);
         if(userProfile != null) {
             httpSession.setAttribute("email", body.getEmail());
-            return new ResponseEntity<>(new ResponseWrapper(null, userProfile), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, userProfile), HttpStatus.OK);
         } else {
             errorList.add("this email is occupied");
-            return new ResponseEntity<>(new ResponseWrapper(errorList, userProfile), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, userProfile), HttpStatus.CONFLICT);
         }
     }
 
     @PostMapping(path = "/api/user/login")
     public ResponseEntity<ResponseWrapper> login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
-        final List errorList = new ArrayList();
+        final List<String> errorList = new ArrayList<>();
 
         if(isEmptyField(body.getEmail())) {
             errorList.add(getEmptyFieldError("email"));
@@ -69,23 +69,23 @@ public class UserController {
             errorList.add(getEmptyFieldError("password"));
         }
 
-        if (errorList.size() > 0) {
-            return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.BAD_REQUEST);
+        if (!errorList.isEmpty()) {
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
 
         if(accountService.login(body.getEmail(), body.getPassword())) {
             httpSession.setAttribute("email", body.getEmail());
-            return new ResponseEntity<>(new ResponseWrapper(null, null), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, null), HttpStatus.OK);
         }
         else {
             errorList.add("invalid email or password");
-            return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.OK);
         }
     }
 
     @PostMapping(path = "/api/user/logout")
     public ResponseEntity<ResponseWrapper> logout(HttpSession httpSession, HttpServletResponse response) {
-        final List errorList = new ArrayList();
+        final List<String> errorList = new ArrayList<String>();
         if(httpSession.getAttribute("email") != null) {
             httpSession.invalidate();
             return new ResponseEntity<>(new ResponseWrapper(null, null), HttpStatus.OK);
@@ -96,21 +96,21 @@ public class UserController {
     }
 
     @GetMapping(path = "/api/user/getuser")
-    public ResponseEntity<ResponseWrapper> getUser(HttpSession httpSession , HttpServletResponse response) {
-        final List errorList = new ArrayList();
+    public ResponseEntity<ResponseWrapper<UserProfile>> getUser(HttpSession httpSession , HttpServletResponse response) {
         if(httpSession.getAttribute("email") != null) {
             final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
-            return new ResponseEntity<>(new ResponseWrapper(null, userProfile), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, userProfile), HttpStatus.OK);
         } else {
+            final List<String> errorList = new ArrayList<>();
             errorList.add("user didn\'t login");
-            return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.OK);
         }
     }
 
 
     @PostMapping(path = "/api/user/update")
-    public ResponseEntity<ResponseWrapper> updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
-        final List errorList = new ArrayList();
+    public ResponseEntity<ResponseWrapper<UserProfile>> updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
+        final List<String> errorList = new ArrayList<>();
 
         if(httpSession.getAttribute("email") != null) {
             if(!isEmptyField(changedUserProfile.getEmail()) || !isEmptyField(changedUserProfile.getPassword()) ||
@@ -120,25 +120,25 @@ public class UserController {
 
                 if (updatedUserProfile == null) {
                     errorList.add("this email is occupied");
-                    return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.CONFLICT);
+                    return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.CONFLICT);
                 }
 
                 httpSession.setAttribute("email", updatedUserProfile.getEmail());
-                return new ResponseEntity<>(new ResponseWrapper(null, updatedUserProfile), HttpStatus.OK);
+                return new ResponseEntity<>(new ResponseWrapper<>(null, updatedUserProfile), HttpStatus.OK);
             } else {
                 errorList.add("data to update is empty");
-                return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
             }
         } else {
             errorList.add("user didn't login");
-            return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new ResponseWrapper<UserProfile>(errorList, null), HttpStatus.FORBIDDEN);
         }
     }
 
 
     @PostMapping(path = "/api/user/score")
     public ResponseEntity<ResponseWrapper> setScore(@RequestBody ObjectNode score, HttpSession httpSession, HttpServletResponse response) {
-        final List errorList = new ArrayList();
+        final List<String> errorList = new ArrayList<String>();
         if(isEmptyField(score.get("score").toString())) {
             errorList.add(getEmptyFieldError("score"));
             return new ResponseEntity<>(new ResponseWrapper(errorList, null), HttpStatus.BAD_REQUEST);
@@ -156,21 +156,21 @@ public class UserController {
     }
 
     @PostMapping(path = "/api/user/leaders/{count}")
-    public ResponseEntity<ResponseWrapper> getLeaders(@PathVariable("count") Integer count, HttpSession httpSession , HttpServletResponse response) {
+    public ResponseEntity<ResponseWrapper<List<UserProfile>>> getLeaders(@PathVariable("count") Integer count, HttpSession httpSession , HttpServletResponse response) {
         int usersCounter;
         if(count == null || count < 1) {
             count = 1;
         }
         final List<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore(count);
-        return new ResponseEntity<>(new ResponseWrapper(null, userProfileArrayList), HttpStatus.OK);
+        return new ResponseEntity<ResponseWrapper<List<UserProfile>>>(new ResponseWrapper<>(null, userProfileArrayList), HttpStatus.OK);
     }
 
     @GetMapping(path = "/api/user/islogin")
-    public ResponseEntity<ResponseWrapper> isLogin(HttpSession httpSession, HttpServletResponse response) {
+    public ResponseEntity<ResponseWrapper<String>> isLogin(HttpSession httpSession, HttpServletResponse response) {
         if(httpSession.getAttribute("email") != null) {
-            return new ResponseEntity<>(new ResponseWrapper(null, "true"), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, "true"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new ResponseWrapper(null, "false"), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, "false"), HttpStatus.OK);
         }
     }
 
