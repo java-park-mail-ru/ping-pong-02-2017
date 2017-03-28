@@ -155,7 +155,7 @@ public class UserController {
         }
     }
 
-    @PostMapping(path = "/api/user/leaders/{count}")
+    @GetMapping(path = "/api/user/leaders/{count}")
     public ResponseEntity<ResponseWrapper<List<UserProfile>>> getLeaders(@PathVariable("count") Integer count) {
         if(count == null || count < 1) {
             count = 1;
