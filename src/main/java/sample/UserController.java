@@ -161,7 +161,7 @@ public class UserController {
         if(count == null || count < 1) {
             count = 1;
         }
-        final ArrayList<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore(count);
+        final List<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore(count);
         return new ResponseEntity<>(new ResponseWrapper(null, userProfileArrayList), HttpStatus.OK);
     }
 

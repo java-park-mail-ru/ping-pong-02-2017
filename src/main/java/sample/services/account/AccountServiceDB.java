@@ -11,6 +11,7 @@ import sample.UserMapper;
 import sample.UserProfile;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sergey on 26.03.17.
@@ -27,6 +28,7 @@ public class AccountServiceDB implements AccountServiceInterface {
                     userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore());
             return getUser(userProfile.getEmail());
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return null;
         }
 
@@ -34,19 +36,21 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     public boolean login(@NotNull String email, @NotNull String password) {
         try {
-            UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE email = ?::citext",
+            UserProfile userProfile = jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE email = ?",
                     new Object[]{email}, new UserMapper());
             return passwordEncoder().matches(password, userProfile.getPassword());
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return false;
         }
     }
 
     public UserProfile getUser(@NotNull String email) {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE email = ?::citext",
+            return jdbcTemplate.queryForObject("SELECT * FROM \"User\" WHERE email = ?",
                     new Object[]{email}, new UserMapper());
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -67,7 +71,7 @@ public class AccountServiceDB implements AccountServiceInterface {
 
         if(userProfile.getEmail().equals(changedProfile.getEmail())) {
             try {
-                jdbcTemplate.update("DELETE FROM \"User\" WHERE email = ?::citext",userProfile.getEmail());
+                jdbcTemplate.update("DELETE FROM \"User\" WHERE email = ?",userProfile.getEmail());
                 jdbcTemplate.update("INSERT INTO \"User\" (login, email, password, score) values (?, ?, ?, ?) ",
                         userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore());
                 return getUser(userProfile.getEmail());
@@ -86,16 +90,16 @@ public class AccountServiceDB implements AccountServiceInterface {
 
     public void updateScore(@NotNull UserProfile userProfile) {
         try {
-            jdbcTemplate.update("UPDATE \"User\" SET score = ? WHERE email = ?::citext",
+            jdbcTemplate.update("UPDATE \"User\" SET score = ? WHERE email = ?",
                     userProfile.getScore(), userProfile.getEmail());
         } catch (DataAccessException e) {
             return;
         }
     }
 
-    public ArrayList<UserProfile> getSortedUsersByScore(int count) {
+    public List<UserProfile> getSortedUsersByScore(int count) {
         try {
-            return (ArrayList<UserProfile>) jdbcTemplate.query("SELECT * FROM \"User\" ORDER BY score DESC LIMIT ?",
+            return jdbcTemplate.query("SELECT * FROM \"User\" ORDER BY score DESC LIMIT ?",
                     new Object[]{count}, new UserMapper());
         } catch (DataAccessException e) {
             return null;
