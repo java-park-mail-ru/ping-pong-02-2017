@@ -28,11 +28,10 @@ public class UserProfile {
         this.password = password;
         this.login = login;
     }
-
+  
     public UserProfile() {
 
     }
-
     private static final AtomicLong ID_GENERATOR = new AtomicLong(1);
 
     public final void setId() {

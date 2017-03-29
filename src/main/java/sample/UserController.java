@@ -23,12 +23,11 @@ import java.util.List;
 public class UserController {
     @NotNull
     private final AccountServiceInterface accountService;
-
-
+    
     @PostMapping(path = "/api/user/registration")
     public ResponseEntity<ResponseWrapper<UserProfile>> register(@RequestBody UserProfile body,
                                                                  HttpSession httpSession) {
-        final List<String> errorList = new ArrayList<>();
+        final List<String> errorList = new ArrayList<>(); 
         if(isEmptyField(body.getEmail())) {
             errorList.add(getEmptyFieldError("email"));
         }
@@ -140,6 +139,7 @@ public class UserController {
             errorList.add(getEmptyFieldError("score"));
             return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
+        
         if(httpSession.getAttribute("email") != null) {
             final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
             userProfile.setScore(score.get("score").intValue());
@@ -185,7 +185,6 @@ public class UserController {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
 
 
