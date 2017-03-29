@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-//@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 public class AccountServiceTest extends UserRelatedTest {
     @Autowired
     @Qualifier("AccountServiceDB")
@@ -220,9 +219,3 @@ public class AccountServiceTest extends UserRelatedTest {
 
     }
 }
-
-/*
-interface AccountServiceInterface {
-    //boolean login(@NotNull String email, @NotNull String password);
-}
-*/
