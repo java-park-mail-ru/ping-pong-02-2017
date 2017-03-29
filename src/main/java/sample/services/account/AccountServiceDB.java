@@ -68,9 +68,9 @@ public class AccountServiceDB implements AccountServiceInterface {
     @Nullable
     @Override
     public UserProfile update(@NotNull String email, @NotNull UserProfile changedProfile) {
-        UserProfile userProfile = getUser(email);
+        final UserProfile userProfile = getUser(email);
         if (userProfile == null) {
-            return changedProfile;
+            return null;
         }
 
         if (passwordEncoder().matches(changedProfile.getPassword(), userProfile.getPassword())) {
@@ -101,6 +101,7 @@ public class AccountServiceDB implements AccountServiceInterface {
         }
     }
 
+    @Nullable
     @Override
     public List<UserProfile> getSortedUsersByScore(int count) {
         try {

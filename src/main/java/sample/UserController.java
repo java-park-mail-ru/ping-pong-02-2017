@@ -56,7 +56,6 @@ public class UserController {
             return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.CONFLICT);
         }
     }
-
     @PostMapping(path = "/api/user/login")
     public ResponseEntity<ResponseWrapper> login(@RequestBody UserProfile body, HttpSession httpSession) {
         final List<String> errorList = new ArrayList<>();
@@ -107,7 +106,6 @@ public class UserController {
         }
     }
 
-
     @PostMapping(path = "/api/user/update")
     public ResponseEntity<ResponseWrapper<UserProfile>> updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession) {
         final List<String> errorList = new ArrayList<>();
@@ -134,7 +132,6 @@ public class UserController {
             return new ResponseEntity<>(new ResponseWrapper<UserProfile>(errorList, null), HttpStatus.FORBIDDEN);
         }
     }
-
 
     @PostMapping(path = "/api/user/score")
     public ResponseEntity<ResponseWrapper> setScore(@RequestBody ObjectNode score, HttpSession httpSession) {

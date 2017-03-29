@@ -1,7 +1,5 @@
-package sample;
+package sample.services.account;
 
-
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,10 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
-import sample.services.account.AccountServiceInterface;
+import sample.UserProfile;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,14 +19,10 @@ import static org.junit.Assert.*;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 //@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
-public class AccountServiceTest {
-    public static final int RADIX = 32;
-    public static final int NUM_BITS = 130;
-
+public class AccountServiceTest extends UserRelatedTest {
     @Autowired
     @Qualifier("AccountServiceDB")
     private AccountServiceInterface accountService;
-    private SecureRandom random = new SecureRandom();
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -89,7 +81,6 @@ public class AccountServiceTest {
         assertEquals(accountService.getUser(getRandomUser().getEmail()), null);
     }
 
-    /*
     @Test
     public void testSuccessfullUserUpdate() {
         System.out.println("Testing successfull user update");
@@ -100,7 +91,7 @@ public class AccountServiceTest {
         userUpdate.setEmail(userProfile.getEmail());
 
         accountService.register(userProfile);
-        final UserProfile newUser = accountService.update(userProfile, userUpdate);
+        final UserProfile newUser = accountService.update(userProfile.getEmail(), userUpdate);
 
         assertTrue(isEqual(newUser, userUpdate));
         System.out.println("OK");
@@ -120,12 +111,11 @@ public class AccountServiceTest {
         accountService.register(firstUser);
         accountService.register(secondUser);
 
-        final UserProfile newUser = accountService.update(firstUser, firstUserUpdate);
+        final UserProfile newUser = accountService.update(firstUser.getEmail(), firstUserUpdate);
         assertEquals(newUser, null);
 
         System.out.println("OK");
     }
-    */
 
     @Test
     public void testNonExistingUserUpdate() {
@@ -134,7 +124,7 @@ public class AccountServiceTest {
         final UserProfile userProfile = getRandomUser();
         final UserProfile userUpdate = getRandomUser();
 
-        final UserProfile newUser = accountService.update(userProfile, userUpdate);
+        final UserProfile newUser = accountService.update(userProfile.getEmail(), userUpdate);
 
         assertEquals(newUser, null);
         System.out.println("OK");
@@ -205,23 +195,10 @@ public class AccountServiceTest {
     public void testDataBaseFlush() {
 
     }
-
-    private UserProfile getRandomUser() {
-        return new UserProfile(getRandomString(), getRandomString(), getRandomString());
-    }
-
-    private String getRandomString() {
-        return new BigInteger(NUM_BITS, random).toString(RADIX);
-    }
-
-    private boolean isEqual(UserProfile user1, UserProfile user2) {
-        return user1.getEmail().equals(user2.getEmail()) && user1.getLogin().equals(user2.getLogin());
-    }
 }
 
 /*
 interface AccountServiceInterface {
     //boolean login(@NotNull String email, @NotNull String password);
-    void flush();
 }
 */
