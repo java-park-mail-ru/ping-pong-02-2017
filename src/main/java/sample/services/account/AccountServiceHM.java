@@ -42,7 +42,7 @@ public class AccountServiceHM implements AccountServiceInterface {
     @Nullable
     @Override
     public UserProfile update(@NotNull String email, @NotNull UserProfile changedProfile) {
-        UserProfile userProfile = userStorage.get(email);
+        final UserProfile userProfile = userStorage.get(email);
         if (userProfile == null) {
             return changedProfile;
         }

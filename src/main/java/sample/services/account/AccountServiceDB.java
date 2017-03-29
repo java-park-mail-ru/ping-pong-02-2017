@@ -32,7 +32,9 @@ public class AccountServiceDB implements AccountServiceInterface {
     public UserProfile register(UserProfile userProfile) {
         try {
             jdbcTemplate.update("INSERT INTO \"User\" (login, email, password, score) values (?, ?, ?, ?) ",
-                    userProfile.getLogin(), userProfile.getEmail(), userProfile.getPassword(), userProfile.getScore());
+                    userProfile.getLogin(), userProfile.getEmail(),
+                    passwordEncoder().encode(userProfile.getPassword()),
+                    userProfile.getScore());
             return getUser(userProfile.getEmail());
         } catch (DataAccessException e) {
             e.printStackTrace();

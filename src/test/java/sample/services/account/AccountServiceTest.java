@@ -76,6 +76,31 @@ public class AccountServiceTest extends UserRelatedTest {
     }
 
     @Test
+    public void testSuccessfullLogin() {
+        System.out.println("Testing successfull credentials validation");
+        final UserProfile userProfile = getRandomUser();
+
+        accountService.register(userProfile);
+        final boolean isValid = accountService.login(userProfile.getEmail(), userProfile.getPassword());
+
+        assertTrue(isValid);
+        System.out.println("OK");
+    }
+
+    @Test
+    public void testLoginFailed() {
+        System.out.println("Testing failed credentials validation");
+        final UserProfile userProfile = getRandomUser();
+        final UserProfile anotherUser = getRandomUser();
+
+        accountService.register(userProfile);
+        final boolean isValid = accountService.login(userProfile.getEmail(), anotherUser.getPassword());
+
+        assertFalse(isValid);
+        System.out.println("OK");
+    }
+
+    @Test
     public void getUserFail() {
         System.out.println("Testing non-existing user extraction");
         assertEquals(accountService.getUser(getRandomUser().getEmail()), null);
@@ -96,7 +121,6 @@ public class AccountServiceTest extends UserRelatedTest {
         assertTrue(isEqual(newUser, userUpdate));
         System.out.println("OK");
     }
-
 
     @Test
     public void testEmailConflictUserUpdate() {

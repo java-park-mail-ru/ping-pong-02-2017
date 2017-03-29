@@ -1,7 +1,6 @@
 package gameLogic.geometryShapes;
 
 
-import gameLogic.geometryShapes.Triangle;
 import org.junit.Before;
 import org.junit.Test;
 
