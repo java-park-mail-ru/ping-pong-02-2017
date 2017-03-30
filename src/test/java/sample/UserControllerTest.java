@@ -1,6 +1,7 @@
 package sample;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.flywaydb.core.Flyway;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,14 +41,9 @@ public class UserControllerTest extends UserRelatedTest {
 
     @Before
     public void setup() {
-        jdbcTemplate.update(
-                "CREATE TABLE IF NOT EXISTS \"User\" (\n" +
-                        "  id SERIAL PRIMARY KEY,\n" +
-                        "  login VARCHAR NOT NULL,\n" +
-                        "  email VARCHAR UNIQUE NOT NULL,\n" +
-                        "  password VARCHAR(256) NOT NULL,\n" +
-                        "  score INTEGER\n" +
-                        ");");
+        final Flyway flyway = new Flyway();
+        flyway.setDataSource("jdbc:h2:mem:testdb", "sa", "");
+        flyway.migrate();
 
         user = getRandomUser();
         accountService.register(user);

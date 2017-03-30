@@ -3,12 +3,12 @@ package sample.services.account;
 import sample.UserProfile;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
+import java.util.Random;
 
 public abstract class UserRelatedTest {
     public static final int RADIX = 32;
     public static final int NUM_BITS = 130;
-    private SecureRandom random = new SecureRandom();
+    private Random random = new Random();
 
     protected UserProfile getRandomUser() {
         return new UserProfile(getRandomString(), getRandomString(), getRandomString());

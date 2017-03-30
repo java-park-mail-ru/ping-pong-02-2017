@@ -1,5 +1,6 @@
 package sample.services.account;
 
+import org.flywaydb.core.Flyway;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,15 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import sample.UserProfile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
 
+@ActiveProfiles({"test"})
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class AccountServiceTest extends UserRelatedTest {
@@ -26,69 +30,63 @@ public class AccountServiceTest extends UserRelatedTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    private final Logger logger = Logger.getLogger(AccountServiceTest.class.getName());
+
     @Before
     public void initDB() {
-        jdbcTemplate.update("DROP TABLE IF EXISTS \"User\" CASCADE");
-        jdbcTemplate.update(
-                "CREATE TABLE IF NOT EXISTS \"User\" (\n" +
-                "  id SERIAL PRIMARY KEY,\n" +
-                "  login VARCHAR NOT NULL,\n" +
-                "  email VARCHAR UNIQUE NOT NULL,\n" +
-                "  password VARCHAR(256) NOT NULL,\n" +
-                "  score INTEGER\n" +
-                ");");
-
-        System.out.println("Database initialized");
+        final Flyway flyway = new Flyway();
+        flyway.setDataSource("jdbc:h2:mem:testdb", "sa", "");
+        flyway.migrate();
     }
 
     @Test
     public void testRegisterSuccess() {
-        System.out.println("Testing successfull user creation");
+        logger.info("Testing successfull user creation");
         final UserProfile userProfile = getRandomUser();
         final UserProfile savedUser = accountService.register(userProfile);
 
         assertTrue(isEqual(userProfile, savedUser));
 
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testRegisterConflict() {
-        System.out.println("Testing conflict user creation");
+        logger.info("Testing conflict user creation");
         final UserProfile userProfile = getRandomUser();
 
         assertNotEquals(accountService.register(userProfile), null);
         assertEquals(accountService.register(userProfile), null);
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testGetUserSuccess() {
-        System.out.println("Testing successfull user extraction");
+        logger.info("Testing successfull user extraction");
         final UserProfile userProfile = getRandomUser();
 
         accountService.register(userProfile);
         final UserProfile extractedUser = accountService.getUser(userProfile.getEmail());
 
         assertTrue(isEqual(userProfile, extractedUser));
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testSuccessfullLogin() {
-        System.out.println("Testing successfull credentials validation");
+        logger.info("Testing successfull credentials validation");
         final UserProfile userProfile = getRandomUser();
 
         accountService.register(userProfile);
         final boolean isValid = accountService.login(userProfile.getEmail(), userProfile.getPassword());
 
         assertTrue(isValid);
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testLoginFailed() {
-        System.out.println("Testing failed credentials validation");
+        logger.info("Testing failed credentials validation");
         final UserProfile userProfile = getRandomUser();
         final UserProfile anotherUser = getRandomUser();
 
@@ -96,18 +94,19 @@ public class AccountServiceTest extends UserRelatedTest {
         final boolean isValid = accountService.login(userProfile.getEmail(), anotherUser.getPassword());
 
         assertFalse(isValid);
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void getUserFail() {
-        System.out.println("Testing non-existing user extraction");
+        logger.info("Testing non-existing user extraction");
         assertEquals(accountService.getUser(getRandomUser().getEmail()), null);
+        logger.info("OK");
     }
 
     @Test
     public void testSuccessfullUserUpdate() {
-        System.out.println("Testing successfull user update");
+        logger.info("Testing successfull user update");
 
         final UserProfile userProfile = getRandomUser();
         final UserProfile userUpdate = getRandomUser();
@@ -118,12 +117,12 @@ public class AccountServiceTest extends UserRelatedTest {
         final UserProfile newUser = accountService.update(userProfile.getEmail(), userUpdate);
 
         assertTrue(isEqual(newUser, userUpdate));
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testEmailConflictUserUpdate() {
-        System.out.println("Testing email conflict user update");
+        logger.info("Testing email conflict user update");
 
         final UserProfile firstUser = getRandomUser();
         final UserProfile secondUser = getRandomUser();
@@ -137,12 +136,12 @@ public class AccountServiceTest extends UserRelatedTest {
         final UserProfile newUser = accountService.update(firstUser.getEmail(), firstUserUpdate);
         assertEquals(newUser, null);
 
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testNonExistingUserUpdate() {
-        System.out.println("Test non existing user update");
+        logger.info("Test non existing user update");
 
         final UserProfile userProfile = getRandomUser();
         final UserProfile userUpdate = getRandomUser();
@@ -150,12 +149,12 @@ public class AccountServiceTest extends UserRelatedTest {
         final UserProfile newUser = accountService.update(userProfile.getEmail(), userUpdate);
 
         assertEquals(newUser, null);
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testSuccessfullScoreUpdate() {
-        System.out.println("Test successful score update");
+        logger.info("Test successful score update");
 
         final UserProfile userProfile = getRandomUser();
         accountService.register(userProfile);
@@ -166,22 +165,22 @@ public class AccountServiceTest extends UserRelatedTest {
 
         assertEquals(newUser.getScore(), newScore);
 
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testNonExistingUserScoreUpdate() {
-        System.out.println("Test non existing user score update");
+        logger.info("Test non existing user score update");
 
         final UserProfile extractedUser = accountService.updateScore(getRandomUser());
         assertEquals(extractedUser, null);
 
-        System.out.println("OK");
+        logger.info("OK");
     }
 
     @Test
     public void testSuccessfulGetLeaders() {
-        System.out.println("Test successful user extraction");
+        logger.info("Test successful user extraction");
 
         final int maxRating = 10000;
         final int startRating = 1000;
@@ -210,12 +209,7 @@ public class AccountServiceTest extends UserRelatedTest {
             assertEquals(extractedScores.get(i), scoreList.get(i));
         }
 
-        System.out.println("OK");
-
-    }
-
-    @Test
-    public void testDataBaseFlush() {
+        logger.info("OK");
 
     }
 }
