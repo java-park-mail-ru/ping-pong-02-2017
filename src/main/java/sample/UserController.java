@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import sample.services.account.AccountServiceDB;
 import sample.services.account.AccountServiceInterface;
@@ -43,8 +41,6 @@ public class UserController {
         if (!errorList.isEmpty()) {
             return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
-
-        body.setPassword(passwordEncoder().encode(body.getPassword()));
 
         final UserProfile userProfile = accountService.register(body);
         if(userProfile != null) {
@@ -180,10 +176,6 @@ public class UserController {
 
     public UserController(@NotNull AccountServiceDB accountService) {
         this.accountService = accountService;
-    }
-
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
 
