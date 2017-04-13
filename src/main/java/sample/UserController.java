@@ -1,15 +1,16 @@
 package sample;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sample.services.account.AccountServiceDB;
+import sample.services.account.AccountServiceInterface;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sergey on 24.02.17.
@@ -19,14 +20,12 @@ import java.util.ArrayList;
 @RestController
 public class UserController {
     @NotNull
-    private final AccountService accountService;
-    private final ObjectMapper mapper = new ObjectMapper();
-
-
+    private final AccountServiceInterface accountService;
+    
     @PostMapping(path = "/api/user/registration")
-    public ObjectNode register(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
-        ObjectNode responseJSON = mapper.createObjectNode();
-        final ArrayNode errorList = mapper.createArrayNode();
+    public ResponseEntity<ResponseWrapper<UserProfile>> register(@RequestBody UserProfile body,
+                                                                 HttpSession httpSession) {
+        final List<String> errorList = new ArrayList<>(); 
         if(isEmptyField(body.getEmail())) {
             errorList.add(getEmptyFieldError("email"));
         }
@@ -39,27 +38,22 @@ public class UserController {
             errorList.add(getEmptyFieldError("login"));
         }
 
-        if (errorList.size() > 0) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseJSON.set("errors", errorList);
-            return responseJSON;
+        if (!errorList.isEmpty()) {
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
 
-        final UserProfile userProfile = accountService.register(body.getEmail(), body.getLogin(), body.getPassword());
+        final UserProfile userProfile = accountService.register(body);
         if(userProfile != null) {
-            responseJSON = userProfileToJSON(userProfile);
             httpSession.setAttribute("email", body.getEmail());
+            return new ResponseEntity<>(new ResponseWrapper<>(null, userProfile), HttpStatus.OK);
         } else {
-            responseJSON.put("error", "this email is occupied");
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            errorList.add("this email is occupied");
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.CONFLICT);
         }
-        return responseJSON;
     }
-
     @PostMapping(path = "/api/user/login")
-    public ObjectNode login(@RequestBody UserProfile body, HttpSession httpSession, HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
-        final ArrayNode errorList = mapper.createArrayNode();
+    public ResponseEntity<ResponseWrapper> login(@RequestBody UserProfile body, HttpSession httpSession) {
+        final List<String> errorList = new ArrayList<>();
 
         if(isEmptyField(body.getEmail())) {
             errorList.add(getEmptyFieldError("email"));
@@ -69,144 +63,128 @@ public class UserController {
             errorList.add(getEmptyFieldError("password"));
         }
 
-        if (errorList.size() > 0) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseJSON.set("error", errorList);
-            return responseJSON;
+        if (!errorList.isEmpty()) {
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
 
         if(accountService.login(body.getEmail(), body.getPassword())) {
             httpSession.setAttribute("email", body.getEmail());
-            responseJSON.put("status", "success");
+            return new ResponseEntity<>(new ResponseWrapper<>(null, null), HttpStatus.OK);
         }
         else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseJSON.put("error", "invalid email or password");
+            errorList.add("invalid email or password");
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.OK);
         }
-        return responseJSON;
     }
 
     @PostMapping(path = "/api/user/logout")
-    public ObjectNode logout(HttpSession httpSession, HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
+    public ResponseEntity<ResponseWrapper> logout(HttpSession httpSession) {
         if(httpSession.getAttribute("email") != null) {
-            responseJSON.put("status", "success");
             httpSession.invalidate();
+            return new ResponseEntity<>(new ResponseWrapper<>(null, null), HttpStatus.OK);
         } else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseJSON.put("error", "user didn\'t login");
+            final List<String> errorList = new ArrayList<>();
+            errorList.add("user didn\'t login");
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.FORBIDDEN);
         }
-        return responseJSON;
     }
 
     @GetMapping(path = "/api/user/getuser")
-    public ObjectNode getUser(HttpSession httpSession , HttpServletResponse response) {
-        ObjectNode responseJSON = mapper.createObjectNode();
+    public ResponseEntity<ResponseWrapper<UserProfile>> getUser(HttpSession httpSession) {
         if(httpSession.getAttribute("email") != null) {
             final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
-            responseJSON = userProfileToJSON(userProfile);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, userProfile), HttpStatus.OK);
         } else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseJSON.put("error", "user didn\'t login");
+            final List<String> errorList = new ArrayList<>();
+            errorList.add("user didn\'t login");
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.OK);
         }
-        return responseJSON;
     }
 
-
     @PostMapping(path = "/api/user/update")
-    public ObjectNode updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession, HttpServletResponse response) {
-        ObjectNode responseJSON = mapper.createObjectNode();
+    public ResponseEntity<ResponseWrapper<UserProfile>> updateUser(@RequestBody UserProfile changedUserProfile, HttpSession httpSession) {
+        final List<String> errorList = new ArrayList<>();
 
         if(httpSession.getAttribute("email") != null) {
-            if(!isEmptyField(changedUserProfile.getEmail()) && !isEmptyField(changedUserProfile.getPassword()) &&
+            if(!isEmptyField(changedUserProfile.getEmail()) || !isEmptyField(changedUserProfile.getPassword()) ||
                     !isEmptyField(changedUserProfile.getLogin())) {
-                final UserProfile oldUserProfile = accountService.getUser(httpSession.getAttribute("email").toString());
-                final UserProfile updatedUserProfile = accountService.update(oldUserProfile, changedUserProfile);
+                final UserProfile updatedUserProfile = accountService.update(
+                        httpSession.getAttribute("email").toString(), changedUserProfile);
 
                 if (updatedUserProfile == null) {
-                    response.setStatus(HttpServletResponse.SC_CONFLICT);
-                    responseJSON.put("error", "this email is occupied");
-                    return responseJSON;
+                    errorList.add("this email is occupied");
+                    return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.CONFLICT);
                 }
 
                 httpSession.setAttribute("email", updatedUserProfile.getEmail());
-                responseJSON = userProfileToJSON(changedUserProfile);
-                return responseJSON;
+                return new ResponseEntity<>(new ResponseWrapper<>(null, updatedUserProfile), HttpStatus.OK);
             } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                responseJSON.put("error", "data to update is empty");
+                errorList.add("data to update is empty");
+                return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
             }
         } else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseJSON.put("error", "user didn't login");
+            errorList.add("user didn't login");
+            return new ResponseEntity<>(new ResponseWrapper<UserProfile>(errorList, null), HttpStatus.FORBIDDEN);
         }
-        return responseJSON;
     }
 
-
     @PostMapping(path = "/api/user/score")
-    public ObjectNode setScore(@RequestBody ObjectNode score, HttpSession httpSession, HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
+    public ResponseEntity<ResponseWrapper> setScore(@RequestBody ObjectNode score, HttpSession httpSession) {
+        final List<String> errorList = new ArrayList<>();
         if(isEmptyField(score.get("score").toString())) {
-            responseJSON.put("error", getEmptyFieldError("score"));
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return responseJSON;
+            errorList.add(getEmptyFieldError("score"));
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
         }
+        
         if(httpSession.getAttribute("email") != null) {
             final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
             userProfile.setScore(score.get("score").intValue());
             accountService.updateScore(userProfile);
-            responseJSON.put("status", "success");
+            return new ResponseEntity<>(new ResponseWrapper<>(null, null), HttpStatus.OK);
         } else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseJSON.put("error", "user didn\'t login");
+            errorList.add("user didn\'t login");
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.FORBIDDEN);
+
         }
-        return responseJSON;
     }
 
-    @PostMapping(path = "/api/user/leaders")
-    public ObjectNode getLeaders(@RequestBody ObjectNode countJSON, HttpSession httpSession , HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
-        int usersCounter;
-        if(countJSON.get("count") == null) {
-            usersCounter = 1;
+
+    @PostMapping(path = "/api/user/rating")
+    public ResponseEntity<ResponseWrapper> setRating(@RequestBody ObjectNode rating, HttpSession httpSession) {
+        final List<String> errorList = new ArrayList<>();
+        if(isEmptyField(rating.get("rating").toString())) {
+            errorList.add(getEmptyFieldError("rating"));
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.BAD_REQUEST);
+        }
+
+        if(httpSession.getAttribute("email") != null) {
+            final UserProfile userProfile = accountService.getUser(httpSession.getAttribute("email").toString());
+            userProfile.setRating(rating.get("rating").intValue());
+            accountService.updateRating(userProfile);
+            return new ResponseEntity<>(new ResponseWrapper<>(null, null), HttpStatus.OK);
         } else {
-            usersCounter = countJSON.get("count").intValue();
+            errorList.add("user didn\'t login");
+            return new ResponseEntity<>(new ResponseWrapper<>(errorList, null), HttpStatus.FORBIDDEN);
+
         }
-        final ArrayNode leadersList = mapper.createArrayNode();
-        final ArrayList<UserProfile> userProfileArrayList = accountService.getSortedUsersByScore();
-        for(int counter = 0; counter < userProfileArrayList.size() && counter < usersCounter; counter++) {
-            leadersList.add(userProfileToJSON(userProfileArrayList.get(counter)));
+    }
+
+    @GetMapping(path = "/api/user/leaders/{count}")
+    public ResponseEntity<ResponseWrapper<List<UserProfile>>> getLeaders(@PathVariable("count") Integer count) {
+        if(count == null || count < 1) {
+            count = 1;
         }
-        responseJSON.set("leaders",leadersList);
-        return responseJSON;
+        final List<UserProfile> userProfileArrayList = accountService.getSortedUsersByRating(count);
+        return new ResponseEntity<>(new ResponseWrapper<>(null, userProfileArrayList), HttpStatus.OK);
     }
 
     @GetMapping(path = "/api/user/islogin")
-    public ObjectNode isLogin(HttpSession httpSession, HttpServletResponse response) {
-        final ObjectNode responseJSON = mapper.createObjectNode();
+    public ResponseEntity<ResponseWrapper<String>> isLogin(HttpSession httpSession) {
         if(httpSession.getAttribute("email") != null) {
-            responseJSON.put("isLoggedIn","true");
+            return new ResponseEntity<>(new ResponseWrapper<>(null, "true"), HttpStatus.OK);
         } else {
-            responseJSON.put("isLoggedIn","false");
+            return new ResponseEntity<>(new ResponseWrapper<>(null, "false"), HttpStatus.OK);
         }
-        return responseJSON;
-    }
-
-    @GetMapping(path = "/api/user/flush")
-    public void flush() {
-        accountService.flush();
-    }
-
-
-    public ObjectNode userProfileToJSON (UserProfile userProfile) {
-        final ObjectNode userProfileJSON = mapper.createObjectNode();
-
-        userProfileJSON.put("id", userProfile.getId());
-        userProfileJSON.put("login", userProfile.getLogin());
-        userProfileJSON.put("email", userProfile.getEmail());
-        userProfileJSON.put("score", userProfile.getScore());
-        return userProfileJSON;
     }
 
     private boolean isEmptyField(String field) {
@@ -217,10 +195,9 @@ public class UserController {
         return ("field " + fieldName + " is empty");
     }
 
-    public UserController(@NotNull AccountService accountService) {
+    public UserController(@NotNull AccountServiceDB accountService) {
         this.accountService = accountService;
     }
-
 }
 
 

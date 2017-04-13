@@ -1,6 +1,8 @@
 language: java
 jdk:
   - oraclejdk8
+services:
+  - postgresql
 branches:       # Branches of repository that are deployed to heroku
   only:
   - develop     # Currently deploying only develop branch
